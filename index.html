@@ -1,0 +1,2974 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lapzesport - Plataforma Oficial de Gestión y Acreditación</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter para máxima legibilidad -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome para Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fcfcfc;
+        }
+        .step-active {
+            border-color: #dc2626; /* Rojo institucional */
+            color: #dc2626;
+            background-color: #fef2f2;
+        }
+        /* Transiciones suaves */
+        .fade-in {
+            animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chat-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-scrollbar::-webkit-scrollbar-thumb {
+            background: #e4e4e7;
+            border-radius: 4px;
+        }
+        .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a1a1aa;
+        }
+    </style>
+</head>
+<body class="bg-[#fafafa] text-zinc-900 min-h-screen flex flex-col relative antialiased">
+
+    <!-- CONTENEDOR DE NOTIFICACIONES (TOASTS) -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- ============================================= -->
+    <!-- TOP SEGURIDAD & BYPASS (NEGRO & ROJO)         -->
+    <!-- ============================================= -->
+    <div class="bg-zinc-950 text-white px-4 py-3 shadow-md flex flex-wrap items-center justify-between gap-3 text-sm z-40 border-b border-red-600/30">
+        <div class="flex items-center gap-2 font-bold">
+            <span class="bg-red-600 text-white text-[10px] px-2.5 py-0.5 rounded uppercase tracking-widest font-black">Módulo de Seguridad</span>
+            <span class="text-zinc-200 text-xs sm:text-sm">Consola Oficial de Control v5.2</span>
+        </div>
+        <div class="flex items-center gap-2 bg-zinc-900 p-1 rounded-lg border border-zinc-800 text-xs">
+            <span class="text-zinc-400 font-bold mr-1">Bypass Rápido:</span>
+            <button onclick="quickLogin('admin@lapzesport.com', 'Administrador Global')" class="px-2 py-0.5 rounded hover:bg-zinc-800 text-red-500 font-extrabold transition-all">Admin</button>
+            <button onclick="quickLogin('coord@colegio.edu.mx', 'Coordinador')" class="px-2 py-0.5 rounded hover:bg-zinc-800 text-zinc-300 font-extrabold transition-all">Coord</button>
+            <button onclick="quickLogin('coach@colegio.edu.mx', 'Coach')" class="px-2 py-0.5 rounded hover:bg-zinc-800 text-zinc-300 font-extrabold transition-all">Coach</button>
+            <button onclick="quickLogin('ref@arbitros.com', 'Árbitro')" class="px-2 py-0.5 rounded hover:bg-zinc-800 text-zinc-300 font-extrabold transition-all">Árbitro (A)</button>
+            <button onclick="quickLogin('novato@arbitros.com', 'Árbitro')" class="px-2 py-0.5 rounded hover:bg-zinc-800 text-zinc-300 font-extrabold transition-all">Árbitro (P)</button>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- PANTALLA DE ACCESO (LOGIN Y SIGN UP)          -->
+    <!-- ============================================= -->
+    <div id="auth-screen" class="flex-grow flex flex-col items-center justify-center py-16 px-4 sm:px-6 lg:px-8 fade-in bg-zinc-50">
+        <div class="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl border border-zinc-200 shadow-xl">
+            <div class="text-center">
+                <div class="inline-flex bg-zinc-950 text-white p-4 rounded-2xl shadow-lg border-b-4 border-red-600 mb-4">
+                    <i class="fa-solid fa-receipt text-3xl text-red-500"></i>
+                </div>
+                <h2 class="text-3xl font-black text-zinc-950 tracking-tight">LAPZESPORT</h2>
+                <p class="text-xs text-zinc-500 mt-1 uppercase tracking-wider font-semibold">Portal Oficial de Gestión y Acreditación Deportiva</p>
+            </div>
+
+            <!-- Tabs Login / Registro -->
+            <div class="flex border-b border-zinc-200 pb-1">
+                <button onclick="switchAuthTab('login')" id="auth-tab-login" class="w-1/2 text-center pb-2.5 font-bold text-sm border-b-2 border-red-600 text-red-600 transition-all">
+                    Iniciar Sesión
+                </button>
+                <button onclick="switchAuthTab('signup')" id="auth-tab-signup" class="w-1/2 text-center pb-2.5 font-bold text-sm border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 transition-all">
+                    Crear Cuenta
+                </button>
+            </div>
+
+            <!-- Formulario de Login -->
+            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Correo Electrónico</label>
+                    <input type="email" id="login-email" required placeholder="tu_correo@lapzesport.com" class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent bg-zinc-50 text-zinc-900 font-semibold transition-all">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Contraseña</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent bg-zinc-50 text-zinc-900 font-semibold transition-all">
+                </div>
+                <button type="submit" class="w-full bg-zinc-950 hover:bg-black border-b-2 border-red-600 text-white font-extrabold py-3 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-md">
+                    Ingresar al Portal <i class="fa-solid fa-arrow-right text-red-500"></i>
+                </button>
+            </form>
+
+            <!-- Formulario de Registro (Sign Up) -->
+            <form id="form-signup" onsubmit="handleSignUp(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Nombre Completo</label>
+                    <input type="text" id="signup-name" required placeholder="Ej. Prof. Arturo Palacios" class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-red-500 bg-zinc-50 font-semibold text-zinc-900">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Rol Solicitado</label>
+                        <select id="signup-role" required onchange="toggleRefereeSignupFields()" class="w-full px-3 py-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-red-500 font-semibold text-zinc-800">
+                            <option value="coordinador">Coordinador Deportivo</option>
+                            <option value="coach">Entrenador / Coach</option>
+                            <option value="arbitro">Árbitro / Juez Oficial</option>
+                        </select>
+                    </div>
+                    <div id="signup-school-wrapper">
+                        <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Escuela / Instituto</label>
+                        <input type="text" id="signup-school" placeholder="Ej. Colegio Patria" class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-red-500 font-semibold text-zinc-900">
+                    </div>
+                    <div id="signup-zone-wrapper" class="hidden">
+                        <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Zona Geográfica</label>
+                        <select id="signup-zone" class="w-full px-3 py-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-red-500 font-semibold text-zinc-800">
+                            <option value="Zona Norte">Zona Norte 🏔️</option>
+                            <option value="Zona Sur">Zona Sur 🌴</option>
+                            <option value="Zona Oriente">Zona Oriente ☀️</option>
+                            <option value="Zona Poniente">Zona Poniente 🌅</option>
+                            <option value="Zona Centro">Zona Centro 🏙️</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="signup-referee-details" class="space-y-4 hidden">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Domicilio Completo</label>
+                            <input type="text" id="signup-address" placeholder="Calle, Número y Colonia" class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-semibold text-zinc-900">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Teléfono Celular</label>
+                            <input type="text" id="signup-phone" placeholder="10 dígitos" class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-50 font-semibold text-zinc-900">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Correo Electrónico</label>
+                    <input type="email" id="signup-email" required placeholder="correo@institucion.edu.mx" class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-red-500 bg-zinc-50 font-semibold text-zinc-900">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Contraseña Sugerida</label>
+                    <input type="password" id="signup-password" required placeholder="Mínimo 6 caracteres" class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-red-500 bg-zinc-50 font-semibold text-zinc-900">
+                </div>
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-md shadow-red-100">
+                    Solicitar Registro <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+
+            <div class="relative flex py-3 items-center">
+                <div class="flex-grow border-t border-zinc-200"></div>
+                <span class="flex-shrink mx-4 text-zinc-400 font-bold text-[9px] uppercase tracking-wider">Público General</span>
+                <div class="flex-grow border-t border-zinc-200"></div>
+            </div>
+
+            <button onclick="openPublicView()" class="w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border border-zinc-200 font-extrabold py-3.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-sm">
+                <i class="fa-solid fa-globe text-sm text-red-600"></i> 🌐 Consultar Estadísticas Públicas
+            </button>
+        </div>
+    </div>
+
+    <!-- PANTALLA: MENSAJE DE REVISIÓN / NO APROBADO -->
+    <div id="pending-screen" class="flex-grow flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 fade-in hidden bg-zinc-50">
+        <div class="max-w-md w-full space-y-6 bg-white p-8 rounded-3xl border border-zinc-200 shadow-xl text-center">
+            <div class="inline-flex bg-red-100 text-red-600 p-4 rounded-full shadow-lg border-2 border-red-500/25 mb-2 animate-pulse">
+                <i class="fa-solid fa-user-lock text-4xl"></i>
+            </div>
+            <h2 class="text-2xl font-black text-zinc-950 tracking-tight">PERFIL EN REVISIÓN</h2>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+                Hola, <span id="pending-referee-name" class="font-bold text-zinc-800">--</span>. Tu solicitud de registro de Árbitro Oficial en <span id="pending-referee-zone" class="font-bold text-red-600">--</span> está siendo verificada por el administrador global.
+            </p>
+            <div class="bg-zinc-50 border-l-4 border-red-600 p-4 rounded-xl text-[11px] text-zinc-700 text-left space-y-1 shadow-sm">
+                <p class="font-bold uppercase text-red-600 tracking-wide text-[9px]">Estatus: Pendiente de Aprobación</p>
+                <p>El Administrador evaluará tus credenciales, domicilio y zona para darte de alta en el sistema de asignación de encuentros de liga.</p>
+            </div>
+            <button onclick="handleLogOut()" class="w-full bg-zinc-950 hover:bg-black text-white font-bold py-2.5 rounded-xl text-xs transition-all border-b-2 border-red-600 shadow-sm">
+                Regresar al Portal
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- PANTALLA: VISTA CONSULTA PÚBLICA             -->
+    <!-- ============================================= -->
+    <div id="public-screen" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden fade-in">
+        <div class="flex items-center justify-between border-b border-zinc-200 pb-4 mb-6">
+            <div class="flex items-center gap-3">
+                <div class="bg-zinc-950 text-white p-3 rounded-xl border border-red-600/30">
+                    <i class="fa-solid fa-globe text-xl text-red-500"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-zinc-950 tracking-tight">Portal de Resultados y Calendarios Públicos</h2>
+                    <p class="text-[11px] text-zinc-500">Consulta libre para padres de familia, jugadores y público en general</p>
+                </div>
+            </div>
+            <button onclick="closePublicView()" class="bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-200 font-bold px-4 py-2 rounded-xl text-xs transition-all">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Regresar al Login
+            </button>
+        </div>
+
+        <div class="flex border-b border-zinc-200 mb-6 bg-white p-2 rounded-xl shadow-sm gap-2 overflow-x-auto">
+            <button onclick="switchPublicSubTab('jornadas')" id="pub-tab-jornadas" class="pub-tab-btn px-4 py-2.5 text-xs font-bold rounded-lg bg-zinc-950 text-white shadow-sm border-b-2 border-red-600">
+                <i class="fa-solid fa-calendar-days mr-1.5 text-red-500"></i> Jornadas / Calendario
+            </button>
+            <button onclick="switchPublicSubTab('estadisticas')" id="pub-tab-estadisticas" class="pub-tab-btn px-4 py-2.5 text-xs font-bold rounded-lg text-zinc-600 hover:bg-zinc-100">
+                <i class="fa-solid fa-chart-line mr-1.5"></i> Tabla de Estadísticas
+            </button>
+            <button onclick="switchPublicSubTab('historial')" id="pub-tab-historial" class="pub-tab-btn px-4 py-2.5 text-xs font-bold rounded-lg text-zinc-600 hover:bg-zinc-100">
+                <i class="fa-solid fa-book-open mr-1.5"></i> Historial por Equipo
+            </button>
+            <button onclick="switchPublicSubTab('sedes')" id="pub-tab-sedes" class="pub-tab-btn px-4 py-2.5 text-xs font-bold rounded-lg text-zinc-600 hover:bg-zinc-100">
+                <i class="fa-solid fa-map-pin mr-1.5 text-red-500"></i> Sedes y Horarios Confirmados
+            </button>
+        </div>
+
+        <!-- Selectores Cascada Públicos -->
+        <div class="bg-white p-5 rounded-2xl border border-zinc-200 mb-6 flex flex-wrap gap-4 items-center justify-between shadow-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full sm:w-auto">
+                <div>
+                    <label class="block text-[9px] font-black text-zinc-400 uppercase mb-0.5">Liga</label>
+                    <select id="public-liga" onchange="onCascadingChange('public', 'liga')" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs font-bold bg-white text-zinc-800 focus:outline-none"></select>
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black text-zinc-400 uppercase mb-0.5">Torneo</label>
+                    <select id="public-torneo" onchange="onCascadingChange('public', 'torneo')" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs font-bold bg-white text-zinc-800 focus:outline-none"></select>
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black text-zinc-400 uppercase mb-0.5">Categoría / Edad</label>
+                    <select id="public-category" onchange="renderPublicViews()" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs font-bold bg-white text-zinc-800 focus:outline-none"></select>
+                </div>
+            </div>
+            <div class="text-[10px] bg-red-50 border border-red-100 text-red-700 px-4 py-2 rounded-full font-bold uppercase cursor-pointer flex items-center gap-1.5 hover:bg-red-100 transition-all shadow-xs" onclick="fetchDataFromSheets()">
+                <i class="fa-solid fa-arrows-rotate"></i> Actualizar desde Sheets
+            </div>
+        </div>
+
+        <!-- Partidos de la Jornada -->
+        <div id="pub-content-jornadas" class="pub-sub-panel grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+
+        <!-- Estadísticas -->
+        <div id="pub-content-estadisticas" class="pub-sub-panel hidden bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-zinc-100 pb-3 mb-2">
+                <h3 class="font-extrabold text-zinc-950 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-ranking-star text-red-600"></i> Tabla de Rendimiento General
+                </h3>
+                <span id="pub-stats-sport-label" class="text-xs bg-red-100 text-red-800 font-extrabold px-3 py-1 rounded-full">Deporte</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-zinc-50 text-zinc-500 uppercase tracking-wider font-bold text-[10px]">
+                        <tr>
+                            <th class="p-3">Posición</th>
+                            <th class="p-3">Equipo</th>
+                            <th class="p-3">PJ</th>
+                            <th class="p-3">G</th>
+                            <th class="p-3">E</th>
+                            <th class="p-3">P</th>
+                            <th class="p-3 font-bold text-red-600">PTS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stats-body-rows" class="divide-y divide-zinc-100 font-semibold text-zinc-700"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Libreta Historial -->
+        <div id="pub-content-historial" class="pub-sub-panel hidden bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-100 pb-4 gap-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-red-600 text-lg"></i>
+                    <div>
+                        <h3 class="font-extrabold text-zinc-950 text-base">Ficha e Historial Individual de Resultados</h3>
+                        <p class="text-[10px] text-zinc-500">Revisa la libreta de partidos jugados de tu escuadra favorita</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-bold text-zinc-500">Seleccionar Equipo:</label>
+                    <select id="pub-team-history-select" onchange="renderTeamIndividualHistory()" class="px-3.5 py-1.5 border border-zinc-200 rounded-xl text-xs font-bold bg-zinc-50 focus:outline-none"></select>
+                </div>
+            </div>
+
+            <div class="max-w-xl mx-auto border-2 border-zinc-300 rounded-3xl p-6 bg-red-50/5 relative shadow-lg overflow-hidden select-none">
+                <div class="absolute left-0 top-0 bottom-0 w-4 bg-zinc-200/50 border-r-2 border-dashed border-zinc-300 flex flex-col justify-between py-6">
+                    <div class="w-2.5 h-2.5 rounded-full bg-zinc-400 mx-auto"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-zinc-400 mx-auto"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-zinc-400 mx-auto"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-zinc-400 mx-auto"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-zinc-400 mx-auto"></div>
+                </div>
+                <div class="pl-6 space-y-6">
+                    <div class="flex justify-between items-start border-b-2 border-red-200 pb-3">
+                        <div>
+                            <h4 class="font-black text-zinc-950 text-lg uppercase tracking-wide" id="libreta-team-name">Cargando...</h4>
+                            <p class="text-xs text-red-600 font-bold animate-pulse" id="libreta-team-details">Categoría: -- | Deporte: --</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[9px] font-mono text-zinc-400 block font-bold">Registro Oficial</span>
+                            <span class="text-xs font-black text-zinc-950 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200" id="libreta-team-rank">Rango #1</span>
+                        </div>
+                    </div>
+                    <div class="space-y-4 font-mono text-xs text-zinc-800" id="libreta-games-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sedes y Horarios Confirmados -->
+        <div id="pub-content-sedes" class="pub-sub-panel hidden bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-zinc-950 text-base flex items-center gap-2">
+                <i class="fa-solid fa-map-location-dot text-red-600"></i> Calendario General de Sedes y Horarios Oficializados
+            </h3>
+            <p class="text-xs text-zinc-500">En esta sección se listan los encuentros previamente acordados y confirmados por los entrenadores.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="sedes-list-container"></div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header id="main-header" class="bg-white border-b border-zinc-200 shadow-sm sticky top-0 z-30 hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-zinc-950 text-white p-2.5 rounded-xl shadow-lg border-b border-red-600">
+                    <i class="fa-solid fa-receipt text-xl text-red-500"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight text-zinc-950">
+                        LAPZESPORT <span class="text-xs font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded ml-1">v5.2</span>
+                    </h1>
+                    <p class="text-xs text-zinc-500 font-semibold" id="connection-status-label">Modo Local (Simulación) 🟡</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right text-xs">
+                    <p class="font-extrabold text-zinc-950" id="user-profile-name">Cargando...</p>
+                    <p class="text-red-600 uppercase tracking-wide font-black text-[9px]" id="user-profile-role">ROL</p>
+                </div>
+                <button onclick="handleLogOut()" class="px-3.5 py-2 text-xs font-bold text-zinc-900 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-xl transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket text-red-600"></i> Salir
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main App Content -->
+    <main id="app-main-content" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden">
+
+        <!-- TAB COMPARTIDO "CONFIRMACIÓN DE SEDE Y DÍA" -->
+        <div id="panel-global-sedes" class="mb-8 hidden">
+            <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+                <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
+                    <h4 class="font-black text-sm text-zinc-950 flex items-center gap-2">
+                        <i class="fa-solid fa-map-pin text-red-600"></i> Pestaña: Confirmación de Sede y Día
+                    </h4>
+                    <span class="text-xs bg-red-50 text-red-700 border border-red-100 font-bold px-3 py-1 rounded-full">Sedes Validadas</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="global-sedes-grid"></div>
+            </div>
+        </div>
+
+        <!-- ============================================= -->
+        <!-- VISTA DEL ADMINISTRADOR (PANEL TABULADO)      -->
+        <!-- ============================================= -->
+        <section id="panel-admin" class="role-panel space-y-8 fade-in hidden">
+            
+            <!-- BARRA DE INTEGRACIÓN DE SHEETS (MÁS LIMPIA Y PROFESIONAL) -->
+            <div class="bg-zinc-950 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border-b-4 border-red-600">
+                <div class="space-y-1">
+                    <h4 class="font-black text-base flex items-center gap-2">
+                        <i class="fa-solid fa-link text-red-500"></i> Conexión con Base de Datos Google Sheets
+                    </h4>
+                    <p class="text-xs text-zinc-400 max-w-xl">
+                        Ingrese la URL de su Google Apps Script para habilitar la persistencia de datos remotos, aprobaciones, roles y cédulas de manera automática.
+                    </p>
+                </div>
+                <div class="w-full md:w-auto flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="px-4 py-2.5 rounded-xl text-xs bg-zinc-900 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-red-600 font-mono w-full md:w-80">
+                    <button onclick="saveApiUrlFromInput()" class="bg-red-600 hover:bg-red-700 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Conectar
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABS DE CONTROL DEL ADMINISTRADOR -->
+            <div class="flex border-b border-zinc-200 gap-1 bg-white p-1 rounded-xl shadow-sm overflow-x-auto">
+                <button onclick="switchAdminSubPanel('dash')" id="asb-dash" class="admin-tab-btn flex-shrink-0 px-4 py-2.5 text-xs font-black rounded-lg bg-zinc-900 text-white border-b-2 border-red-600 transition-all">
+                    <i class="fa-solid fa-chart-pie mr-1.5"></i> Monitoreo Coordinación
+                </button>
+                <button onclick="switchAdminSubPanel('struct')" id="asb-struct" class="admin-tab-btn flex-shrink-0 px-4 py-2.5 text-xs font-black rounded-lg text-zinc-600 hover:bg-zinc-100 transition-all">
+                    <i class="fa-solid fa-sitemap mr-1.5"></i> Estructura Competencias
+                </button>
+                <button onclick="switchAdminSubPanel('teams')" id="asb-teams" class="admin-tab-btn flex-shrink-0 px-4 py-2.5 text-xs font-black rounded-lg text-zinc-600 hover:bg-zinc-100 transition-all">
+                    <i class="fa-solid fa-users mr-1.5"></i> Registro Equipos
+                </button>
+                <button onclick="switchAdminSubPanel('refs')" id="asb-refs" class="admin-tab-btn flex-shrink-0 px-4 py-2.5 text-xs font-black rounded-lg text-zinc-600 hover:bg-zinc-100 transition-all">
+                    <i class="fa-solid fa-gavel mr-1.5"></i> Cuerpo Arbitral
+                </button>
+                <button onclick="switchAdminSubPanel('rj')" id="asb-rj" class="admin-tab-btn flex-shrink-0 px-4 py-2.5 text-xs font-black rounded-lg text-zinc-600 hover:bg-zinc-100 transition-all">
+                    <i class="fa-solid fa-calendar-days mr-1.5"></i> Rol de Juegos (RJ)
+                </button>
+                <button onclick="switchAdminSubPanel('chat')" id="asb-chat" class="admin-tab-btn flex-shrink-0 px-4 py-2.5 text-xs font-black rounded-lg text-zinc-600 hover:bg-zinc-100 transition-all">
+                    <i class="fa-solid fa-comments mr-1.5"></i> Soporte / Mensajería
+                </button>
+            </div>
+
+            <!-- SUBPANEL 1: DASHBOARD COORDINADORES -->
+            <div id="asp-dash" class="admin-sub-panel space-y-6 fade-in">
+                <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
+                        <div class="space-y-0.5">
+                            <h3 class="font-extrabold text-zinc-950 text-base">Tablero de Control de Coordinaciones</h3>
+                            <p class="text-[10px] text-zinc-500">Supervisión e inscripciones de clubes de cada escuela acreditada</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <input type="text" id="admin-coord-search" oninput="renderCoordDashboard()" placeholder="Buscar coordinador o equipo..." class="px-3.5 py-1.5 border border-zinc-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-red-600 text-zinc-800">
+                            <select id="admin-coord-filter-sport" onchange="renderCoordDashboard()" class="px-3 py-1.5 border border-zinc-200 rounded-lg text-xs font-bold text-zinc-700 focus:outline-none">
+                                <option value="todos">Todos los Deportes</option>
+                                <option value="Fútbol">Fútbol ⚽</option>
+                                <option value="Básquetbol">Básquetbol 🏀</option>
+                                <option value="Vóleibol">Vóleibol 🏐</option>
+                                <option value="Atletismo">Atletismo 🏃</option>
+                                <option value="Ajedrez">Ajedrez ♟️</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="admin-coord-dashboard-container" class="grid grid-cols-1 gap-6"></div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 2: GESTOR DE ESTRUCTURA -->
+            <div id="asp-struct" class="admin-sub-panel hidden space-y-6 fade-in">
+                <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        <form onsubmit="handleCreateStructure(event)" class="lg:col-span-1 p-5 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-4">
+                            <h4 class="font-bold text-zinc-900 text-xs uppercase tracking-wider border-b border-zinc-200 pb-2 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-plus text-red-600"></i> Estructura Competitiva
+                            </h4>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Nombre de Liga</label>
+                                <input type="text" id="struct-liga" required placeholder="Ej. Liga Premier Patria" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs bg-white text-zinc-900 font-semibold focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Torneo</label>
+                                <input type="text" id="struct-torneo" required placeholder="Ej. Clausura 2026" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs bg-white text-zinc-900 font-semibold focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Categoría</label>
+                                <select id="struct-categoria" required class="w-full px-3 py-2 border border-zinc-200 rounded-lg text-xs bg-white text-zinc-800 font-semibold focus:outline-none">
+                                    <option value="Categoría 2019">Categoría 2019 (7 años)</option>
+                                    <option value="Categoría 2018">Categoría 2018 (8 años)</option>
+                                    <option value="Categoría 2017">Categoría 2017 (9 años)</option>
+                                    <option value="Categoría 2016">Categoría 2016 (10 años)</option>
+                                    <option value="Categoría 2015">Categoría 2015 (11 años)</option>
+                                    <option value="Categoría 2014">Categoría 2014 (12 años)</option>
+                                    <option value="Categoría 2013">Categoría 2013 (13 años)</option>
+                                    <option value="Categoría 2012">Categoría 2012 (14 años)</option>
+                                    <option value="Categoría Libre">Categoría Libre 🏆</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Disciplina</label>
+                                <select id="struct-deporte" class="w-full px-3 py-2 border border-zinc-200 rounded-lg text-xs bg-white text-zinc-800 font-semibold focus:outline-none">
+                                    <option value="Fútbol">Fútbol ⚽</option>
+                                    <option value="Básquetbol">Básquetbol 🏀</option>
+                                    <option value="Vóleibol">Vóleibol 🏐</option>
+                                    <option value="Atletismo">Atletismo 🏃</option>
+                                    <option value="Ajedrez">Ajedrez ♟️</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-zinc-950 hover:bg-black border-b-2 border-red-600 text-white font-extrabold py-2.5 rounded-xl text-xs transition-colors">
+                                Sincronizar Estructura
+                            </button>
+                        </form>
+
+                        <div class="lg:col-span-3 border border-zinc-200 rounded-2xl p-5 bg-white space-y-4">
+                            <h4 class="font-extrabold text-zinc-950 text-xs uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b">
+                                <i class="fa-solid fa-list text-red-600"></i> Estructuras Registradas en Sistema
+                            </h4>
+                            <div class="overflow-x-auto max-h-[360px] overflow-y-auto chat-scrollbar">
+                                <table class="w-full text-left text-xs font-semibold text-zinc-700">
+                                    <thead class="bg-zinc-50 text-zinc-500 uppercase font-black text-[9px] tracking-wider sticky top-0">
+                                        <tr>
+                                            <th class="p-3">Liga</th>
+                                            <th class="p-3">Torneo</th>
+                                            <th class="p-3">Categoría</th>
+                                            <th class="p-3">Deporte</th>
+                                            <th class="p-3 text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="struct-table-body" class="divide-y divide-zinc-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 3: REGISTRO DE EQUIPOS -->
+            <div id="asp-teams" class="admin-sub-panel hidden space-y-6 fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <form onsubmit="handleAdminCreateTeam(event)" class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-4 h-fit">
+                        <h4 class="font-extrabold text-zinc-950 text-xs uppercase tracking-wider pb-3 border-b flex items-center gap-1.5">
+                            <i class="fa-solid fa-shield text-red-600"></i> Inscribir Nueva Escuadra
+                        </h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Liga</label>
+                                <select id="admin-liga" onchange="onCascadingChange('admin', 'liga')" class="w-full px-3 py-2 border border-zinc-200 rounded-lg text-xs bg-white text-zinc-800 font-semibold focus:outline-none"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Torneo</label>
+                                <select id="admin-torneo" onchange="onCascadingChange('admin', 'torneo')" class="w-full px-3 py-2 border border-zinc-200 rounded-lg text-xs bg-white text-zinc-800 font-semibold focus:outline-none"></select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Nombre del Club / Equipo</label>
+                            <input type="text" id="admin-team-name" required placeholder="Ej. Instituto Patria Rojo" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs font-semibold text-zinc-900 focus:outline-none">
+                        </div>
+                        <div class="border-t border-zinc-100 pt-3 space-y-3">
+                            <h5 class="text-xs font-black text-zinc-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-user-shield text-red-600"></i> Coordinador Institucional
+                            </h5>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" id="admin-coord-name" required placeholder="Nombre" class="px-3 py-1.5 border border-zinc-200 rounded text-xs bg-zinc-50 font-semibold">
+                                <input type="email" id="admin-coord-email" required placeholder="Correo" class="px-3 py-1.5 border border-zinc-200 rounded text-xs bg-zinc-50 font-semibold">
+                            </div>
+                        </div>
+                        <div class="border-t border-zinc-100 pt-3 space-y-3">
+                            <h5 class="text-xs font-black text-zinc-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-user text-zinc-700"></i> Coach Técnico
+                            </h5>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" id="admin-coach-name" required placeholder="Nombre" class="px-3 py-1.5 border border-zinc-200 rounded text-xs bg-zinc-50 font-semibold">
+                                <input type="email" id="admin-coach-email" required placeholder="Correo" class="px-3 py-1.5 border border-zinc-200 rounded text-xs bg-zinc-50 font-semibold">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-zinc-950 hover:bg-black border-b-2 border-red-600 text-white font-extrabold py-2.5 rounded-xl text-xs transition-all">
+                            Dar de Alta e Inscribir
+                        </button>
+                    </form>
+
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+                        <h4 class="font-extrabold text-zinc-950 text-xs uppercase tracking-wider pb-3 border-b flex items-center gap-1.5">
+                            <i class="fa-solid fa-address-book text-red-600"></i> Directorio Dinámico de Equipos
+                        </h4>
+                        <div id="admin-directory-container" class="space-y-4 max-h-[500px] overflow-y-auto chat-scrollbar pr-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 4: CUERPO ARBITRAL -->
+            <div id="asp-refs" class="admin-sub-panel hidden space-y-6 fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <form onsubmit="handleAdminCreateReferee(event)" class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-4 h-fit">
+                        <h4 class="font-extrabold text-zinc-950 text-xs uppercase tracking-wider pb-3 border-b flex items-center gap-1.5">
+                            <i class="fa-solid fa-user-plus text-red-600"></i> Registrar Juez Oficial
+                        </h4>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Nombre Completo</label>
+                            <input type="text" id="admin-ref-name" required placeholder="Prof. Arturo Palacios" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs font-semibold text-zinc-900 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Domicilio Completo</label>
+                            <input type="text" id="admin-ref-address" required placeholder="Calle, Número y Colonia" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs font-semibold text-zinc-900 focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Celular</label>
+                                <input type="text" id="admin-ref-phone" required placeholder="10 dígitos" class="w-full px-3 py-2 border border-zinc-200 rounded-lg text-xs bg-zinc-50 font-semibold focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Zona Geográfica</label>
+                                <select id="admin-ref-zone" class="w-full px-3 py-2 border border-zinc-200 rounded-lg text-xs bg-zinc-50 font-semibold focus:outline-none text-zinc-800">
+                                    <option value="Zona Centro">Zona Centro 🏙️</option>
+                                    <option value="Zona Norte">Zona Norte 🏔️</option>
+                                    <option value="Zona Sur">Zona Sur 🌴</option>
+                                    <option value="Zona Oriente">Zona Oriente ☀️</option>
+                                    <option value="Zona Poniente">Zona Poniente 🌅</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Email de Contacto</label>
+                            <input type="email" id="admin-ref-email" required placeholder="correo@arbitros.com" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs font-semibold text-zinc-900 focus:outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-zinc-950 hover:bg-black border-b-2 border-red-600 text-white font-extrabold py-2.5 rounded-xl text-xs transition-all">
+                            Registrar y Aprobar
+                        </button>
+                    </form>
+
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center border-b pb-3">
+                            <h4 class="font-extrabold text-zinc-950 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-users text-red-600"></i> Árbitros en el Sistema
+                            </h4>
+                            <select id="admin-ref-filter-zone" onchange="renderRefereeAdminList()" class="px-3 py-1 border border-zinc-200 rounded-lg text-xs font-bold text-zinc-700 bg-zinc-50">
+                                <option value="todas">Todas las Zonas 🌍</option>
+                                <option value="Zona Centro">Zona Centro</option>
+                                <option value="Zona Norte">Zona Norte</option>
+                                <option value="Zona Sur">Zona Sur</option>
+                                <option value="Zona Oriente">Zona Oriente</option>
+                                <option value="Zona Poniente">Zona Poniente</option>
+                            </select>
+                        </div>
+                        <div class="overflow-x-auto max-h-[420px] overflow-y-auto chat-scrollbar">
+                            <table class="w-full text-left text-xs font-semibold text-zinc-700">
+                                <thead class="bg-zinc-50 text-zinc-400 uppercase font-black text-[9px] tracking-wider sticky top-0">
+                                    <tr>
+                                        <th class="p-3">Nombre</th>
+                                        <th class="p-3">Datos / Contacto</th>
+                                        <th class="p-3 text-center">Zona</th>
+                                        <th class="p-3 text-center">Estatus</th>
+                                        <th class="p-3 text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-ref-table-body" class="divide-y divide-zinc-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 5: ROL DE JUEGOS -->
+            <div id="asp-rj" class="admin-sub-panel hidden space-y-6 fade-in">
+                <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="p-5 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-4">
+                            <h4 class="font-extrabold text-zinc-950 text-xs uppercase tracking-wider pb-2 border-b flex items-center gap-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles text-red-600"></i> Sorteo de Calendario
+                            </h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Liga</label>
+                                    <select id="rj-liga" onchange="onCascadingChange('rj', 'liga')" class="w-full px-3 py-2 border border-zinc-200 rounded-lg text-xs bg-white text-zinc-800 font-semibold focus:outline-none"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Torneo</label>
+                                    <select id="rj-torneo" onchange="onCascadingChange('rj', 'torneo')" class="w-full px-3 py-2 border border-zinc-200 rounded-lg text-xs bg-white text-zinc-800 font-semibold focus:outline-none"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Categoría</label>
+                                    <select id="rj-category-select" onchange="renderRjCategoryAdmin()" class="w-full px-3 py-2 border border-zinc-200 rounded-lg text-xs bg-white text-zinc-800 font-semibold focus:outline-none"></select>
+                                </div>
+                            </div>
+                            <button onclick="generateRjMatches()" class="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-md shadow-red-100">
+                                <i class="fa-solid fa-play"></i> Sorteo Automático
+                            </button>
+                            <button onclick="clearRjMatches()" class="w-full bg-zinc-200 hover:bg-zinc-300 text-zinc-800 border border-zinc-300 font-bold py-2 rounded-xl text-xs transition-colors">
+                                <i class="fa-solid fa-trash-can"></i> Limpiar Rol
+                            </button>
+                        </div>
+
+                        <div class="lg:col-span-2 border border-zinc-200 rounded-2xl p-5 bg-white space-y-4">
+                            <div class="flex items-center justify-between border-b pb-3">
+                                <h4 class="font-extrabold text-zinc-950 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                    <i class="fa-solid fa-calendar-check text-red-600"></i> Enfrentamientos y Jueces
+                                </h4>
+                                <span id="rj-stats-label" class="text-[10px] bg-red-50 text-red-700 border border-red-100 font-bold px-3 py-1 rounded-full">0 Partidos</span>
+                            </div>
+                            <div id="rj-admin-matches-list" class="space-y-3 max-h-[360px] overflow-y-auto chat-scrollbar pr-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL 6: SOPORTE / CHAT -->
+            <div id="asp-chat" class="admin-sub-panel hidden space-y-6 fade-in">
+                <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1 border-r border-zinc-100 pr-4 space-y-3">
+                        <h3 class="font-extrabold text-zinc-950 text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-comments text-red-600"></i> Mesa de Control
+                        </h3>
+                        <p class="text-[11px] text-zinc-500 leading-relaxed">Seleccione un canal activo para responder consultas de soporte en tiempo real.</p>
+                        <div class="flex flex-col gap-2 pt-2">
+                            <button onclick="switchAdminChatChannel('coordinador')" id="admin-chat-tab-coordinador" class="w-full text-left p-3 rounded-xl border border-red-200 text-xs font-bold flex justify-between items-center bg-red-50/50 text-red-700">
+                                <span><i class="fa-solid fa-user-shield mr-2"></i>Coordinadores</span>
+                            </button>
+                            <button onclick="switchAdminChatChannel('coach')" id="admin-chat-tab-coach" class="w-full text-left p-3 rounded-xl border border-zinc-200 text-xs font-bold flex justify-between items-center hover:bg-zinc-50 text-zinc-700">
+                                <span><i class="fa-solid fa-user-tag mr-2"></i>Coaches</span>
+                            </button>
+                            <button onclick="switchAdminChatChannel('arbitro')" id="admin-chat-tab-arbitro" class="w-full text-left p-3 rounded-xl border border-zinc-200 text-xs font-bold flex justify-between items-center hover:bg-zinc-50 text-zinc-700">
+                                <span><i class="fa-solid fa-gavel mr-2"></i>Árbitros</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2 flex flex-col justify-between h-80 bg-zinc-50 border border-zinc-200 rounded-2xl overflow-hidden p-4 shadow-inner">
+                        <div class="flex items-center justify-between border-b border-zinc-200 pb-2 mb-2">
+                            <span id="admin-chat-current-title" class="text-xs font-extrabold text-zinc-950 uppercase">Canal: Coordinadores</span>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">Soporte Activo</span>
+                        </div>
+                        <div id="admin-chat-box" class="flex-grow overflow-y-auto space-y-3 pr-2 chat-scrollbar font-semibold"></div>
+                        <form onsubmit="handleSendAdminChatMessage(event)" class="mt-3 flex gap-2">
+                            <input type="text" id="admin-chat-input" placeholder="Escriba un mensaje de respuesta oficial..." required class="flex-grow px-3.5 py-2 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-red-600 font-semibold text-zinc-900">
+                            <button type="submit" class="bg-zinc-950 hover:bg-black text-white font-extrabold px-5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+                                Enviar <i class="fa-solid fa-paper-plane text-red-500"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ============================================= -->
+        <!-- VISTA DEL COORDINADOR                         -->
+        <!-- ============================================= -->
+        <section id="panel-coordinator" class="role-panel space-y-8 fade-in hidden">
+            <div class="bg-zinc-950 border-b-4 border-red-600 text-white p-6 rounded-2xl shadow-lg flex justify-between items-center flex-wrap gap-4">
+                <div class="space-y-1">
+                    <h3 class="text-lg font-black flex items-center gap-2"><i class="fa-solid fa-user-shield text-red-500"></i> Panel de Coordinación Deportiva</h3>
+                    <p class="text-xs text-zinc-400">Inscriba escuadras, verifique el cuerpo técnico asignado y consulte rosters y planillas de juego.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Registro de Escuadras -->
+                <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm h-fit space-y-4">
+                    <h4 class="font-extrabold text-zinc-950 text-sm pb-2 border-b border-zinc-100 flex items-center gap-1.5"><i class="fa-solid fa-circle-plus text-red-600"></i> Inscribir Escuadra</h4>
+                    <form id="form-coord-team" onsubmit="handleCoordCreateTeam(event)" class="space-y-4">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Liga</label>
+                                <select id="coord-liga" onchange="onCascadingChange('coord', 'liga')" class="w-full px-3 py-2 border rounded-lg text-xs bg-white text-zinc-850 font-semibold focus:outline-none"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Torneo</label>
+                                <select id="coord-torneo" onchange="onCascadingChange('coord', 'torneo')" class="w-full px-3 py-2 border rounded-lg text-xs bg-white text-zinc-850 font-semibold focus:outline-none"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Categoría</label>
+                                <select id="coord-category" onchange="onCascadingChange('coord', 'categoria')" class="w-full px-3 py-2 border rounded-lg text-xs bg-white text-zinc-850 font-semibold focus:outline-none"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Deporte Asignado</label>
+                                <input type="text" id="coord-sport" readonly class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs bg-zinc-100 font-bold focus:outline-none text-red-600">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Nombre de la Escuadra</label>
+                            <input type="text" id="coord-team-name" required placeholder="Ej. Instituto Patria Azul" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs bg-white font-semibold text-zinc-900 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Email del Entrenador asignado</label>
+                            <input type="email" id="coord-coach-email" required placeholder="coach@correo.com" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs bg-white font-semibold text-zinc-900 focus:outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-zinc-950 hover:bg-black border-b-2 border-red-600 text-white font-extrabold py-2.5 rounded-xl text-xs transition-colors">
+                            Registrar Escuadra
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm lg:col-span-2 space-y-6">
+                    <div>
+                        <h4 class="font-extrabold text-zinc-950 text-sm pb-2 border-b border-zinc-100 flex items-center gap-1.5"><i class="fa-solid fa-list-check text-red-600"></i> Escuadras Representadas</h4>
+                        <div class="overflow-x-auto max-h-[220px] overflow-y-auto chat-scrollbar">
+                            <table class="w-full text-left text-xs font-semibold text-zinc-700">
+                                <thead class="bg-zinc-50">
+                                    <tr class="text-zinc-400 border-b">
+                                        <th class="p-2">Escuadra</th>
+                                        <th class="p-2">Liga / Torneo</th>
+                                        <th class="p-2">Categoría y Deporte</th>
+                                        <th class="p-2 text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coord-teams-list" class="divide-y divide-zinc-100 font-semibold text-zinc-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-zinc-100 pt-4">
+                        <h4 class="font-extrabold text-zinc-950 text-sm mb-4 flex items-center gap-1.5"><i class="fa-solid fa-users text-red-600"></i> Rosters Registrados por Coaches</h4>
+                        <div class="overflow-x-auto max-h-48 overflow-y-auto chat-scrollbar">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-zinc-50 text-zinc-500 font-bold uppercase text-[9px] tracking-wider">
+                                    <tr>
+                                        <th class="p-2">Equipo</th>
+                                        <th class="p-2">Nombre del Jugador</th>
+                                        <th class="p-2">CURP / Carnet</th>
+                                        <th class="p-2 text-center">Camiseta</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coord-rosters-list" class="divide-y divide-zinc-100 font-semibold text-zinc-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat del Coordinador -->
+            <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm max-w-2xl mx-auto space-y-4">
+                <h4 class="font-extrabold text-sm text-zinc-950 flex items-center gap-1.5">
+                    <i class="fa-solid fa-headset text-red-600"></i> Mesa de Ayuda Directa
+                </h4>
+                <div class="flex flex-col justify-between h-64 bg-zinc-50 border border-zinc-200 rounded-2xl p-4">
+                    <div id="coordinador-chat-box" class="flex-grow overflow-y-auto space-y-3 pr-2 chat-scrollbar font-semibold"></div>
+                    <form onsubmit="handleSendUserChatMessage(event, 'coordinador')" class="mt-3 flex gap-2">
+                        <input type="text" id="coordinador-chat-input" placeholder="Pregunta sobre acreditaciones..." required class="flex-grow px-3.5 py-2 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none font-semibold text-zinc-900">
+                        <button type="submit" class="bg-zinc-950 hover:bg-black text-white font-bold px-5 rounded-xl text-xs">
+                            Enviar <i class="fa-solid fa-paper-plane text-red-500 ml-1"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================= -->
+        <!-- VISTA DEL COACH (ENTRENADOR)                  -->
+        <!-- ============================================= -->
+        <section id="panel-coach" class="role-panel space-y-8 fade-in hidden">
+            <div class="bg-zinc-950 border-b-4 border-red-600 text-white p-6 rounded-2xl shadow-lg flex justify-between items-center">
+                <div class="space-y-1">
+                    <h3 class="text-lg font-black flex items-center gap-2"><i class="fa-solid fa-user-tag text-red-500"></i> Panel Técnico del Entrenador</h3>
+                    <p class="text-xs text-zinc-400">Inscriba la plantilla de atletas de su escuadra y defina canchas, fechas y horarios para partidos de local.</p>
+                </div>
+                <div class="text-right">
+                    <span id="coach-active-team" class="bg-zinc-900 border border-zinc-800 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs">Cargando Escuadra...</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Roster de Jugadores -->
+                <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm h-fit space-y-4">
+                    <h4 class="font-extrabold text-zinc-950 text-sm pb-2 border-b border-zinc-100 flex items-center gap-1.5"><i class="fa-solid fa-user-plus text-red-600"></i> Inscribir Atleta al Roster</h4>
+                    <form id="form-coach-player" onsubmit="handleAddPlayer(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Nombre Completo del Jugador</label>
+                            <input type="text" id="player-name" required placeholder="Ej. Juan Pérez López" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs bg-white font-semibold text-zinc-900 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">CURP / Cédula Identidad</label>
+                            <input type="text" id="player-curp" required placeholder="ABCD123456XYZ" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs bg-white font-semibold text-zinc-900 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Número de Camiseta / Dorsal</label>
+                            <input type="number" id="player-number" required placeholder="10" class="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-xs bg-white font-semibold text-zinc-900 focus:outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-zinc-950 hover:bg-black border-b-2 border-red-600 text-white font-extrabold py-2.5 rounded-xl text-xs transition-colors">
+                            Registrar en Roster Oficial
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm lg:col-span-2 space-y-6">
+                    <div>
+                        <h4 class="font-extrabold text-zinc-950 text-sm mb-4 pb-2 border-b border-zinc-100 flex items-center justify-between">
+                            <span><i class="fa-solid fa-users text-red-600"></i> Plantilla Validada del Club</span>
+                            <span id="roster-count" class="text-xs bg-zinc-100 text-zinc-700 border border-zinc-200 px-3 py-1 rounded font-bold">0 Jugadores</span>
+                        </h4>
+                        <div class="overflow-x-auto max-h-56 overflow-y-auto chat-scrollbar">
+                            <table class="w-full text-left text-xs font-semibold text-zinc-800">
+                                <thead class="bg-zinc-50 text-zinc-400 uppercase text-[9px] tracking-wider">
+                                    <tr class="border-b">
+                                        <th class="p-2">Nombre</th>
+                                        <th class="p-2">Identificación / CURP</th>
+                                        <th class="p-2">Dorsal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coach-players-list" class="divide-y divide-zinc-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Confirmación de Programación como Local -->
+                    <div class="border-t border-zinc-100 pt-4 space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-red-50 text-red-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-calendar-check text-[10px]"></i></span>
+                            <h4 class="font-extrabold text-zinc-950 text-sm">Oficializar Programación (Local)</h4>
+                        </div>
+                        <p class="text-[11px] text-zinc-500 leading-relaxed">
+                            Como DT local, es su obligación definir la **Sede, el Día y la Hora** del partido, previo acuerdo amistoso con el director técnico visitante, para que el administrador pueda asignar jueces.
+                        </p>
+                        
+                        <div class="space-y-3 bg-zinc-50 p-4 rounded-xl border border-zinc-200">
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Seleccionar Partido Local</label>
+                                <select id="coach-match-select" class="w-full px-3 py-2 border border-zinc-200 rounded-lg text-xs bg-white text-zinc-850 font-bold focus:outline-none"></select>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Cancha / Sede</label>
+                                    <input type="text" id="coach-venue-proposed" placeholder="Cancha Centenario 1" class="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs bg-white font-semibold text-zinc-900 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Fecha</label>
+                                    <input type="date" id="coach-date-proposed" class="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs bg-white font-semibold text-zinc-900 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Hora Pactada</label>
+                                    <input type="text" id="coach-time-proposed" placeholder="10:30 AM" class="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs bg-white font-semibold text-zinc-900 focus:outline-none">
+                                </div>
+                            </div>
+                            <button onclick="submitCoachMatchProgram()" class="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-2 rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-check"></i> Programar y Notificar Liga
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat del Coach -->
+            <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm max-w-2xl mx-auto space-y-4">
+                <h4 class="font-extrabold text-sm text-zinc-950 flex items-center gap-1.5">
+                    <i class="fa-solid fa-headset text-red-600"></i> Mesa de Ayuda Directa
+                </h4>
+                <div class="flex flex-col justify-between h-64 bg-zinc-50 border border-zinc-200 rounded-2xl p-4">
+                    <div id="coach-chat-box" class="flex-grow overflow-y-auto space-y-3 pr-2 chat-scrollbar font-semibold"></div>
+                    <form onsubmit="handleSendUserChatMessage(event, 'coach')" class="mt-3 flex gap-2">
+                        <input type="text" id="coach-chat-input" placeholder="Pregunta sobre uniformes o canchas..." required class="flex-grow px-3.5 py-2 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none font-semibold text-zinc-900">
+                        <button type="submit" class="bg-zinc-950 hover:bg-black text-white font-bold px-5 rounded-xl text-xs">
+                            Enviar <i class="fa-solid fa-paper-plane text-red-500 ml-1"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================= -->
+        <!-- VISTA DEL ÁRBITRO (CÉDULA PROFESIONAL)        -->
+        <!-- ============================================= -->
+        <section id="panel-referee" class="role-panel space-y-8 fade-in hidden">
+            <div class="bg-zinc-950 border-b-4 border-red-600 text-white p-6 rounded-2xl shadow-md">
+                <h3 class="text-lg font-black flex items-center gap-2"><i class="fa-solid fa-gavel text-red-500"></i> Cédula de Jueces y Árbitros Oficiales</h3>
+                <p class="text-xs text-zinc-400 mt-1">Siente bases, registre alineaciones y asiente incidencias en la Cédula Profesional del encuentro.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-6">
+                <h4 class="font-extrabold text-zinc-950 text-sm pb-2 border-b flex items-center gap-2"><i class="fa-solid fa-file-invoice text-red-600"></i> Llenado de Cédula Digital de Juego</h4>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Liga</label>
+                        <select id="ref-liga" onchange="onCascadingChange('ref', 'liga')" class="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none font-semibold text-zinc-850"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Torneo</label>
+                        <select id="ref-torneo" onchange="onCascadingChange('ref', 'torneo')" class="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none font-semibold text-zinc-850"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Categoría</label>
+                        <select id="ref-category" onchange="updateRefMatchesSelect()" class="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none font-semibold text-zinc-850"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Seleccionar Partido Designado</label>
+                        <select id="ref-match-select" onchange="onRefMatchChange()" class="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none font-semibold text-zinc-850"></select>
+                    </div>
+                </div>
+
+                <!-- FORMULARIO MULTIPESTAÑA DE LA CÉDULA -->
+                <div class="border border-zinc-200 rounded-2xl overflow-hidden bg-zinc-50/50">
+                    <div class="flex border-b border-zinc-200 bg-white text-xs font-bold overflow-x-auto text-zinc-500">
+                        <button onclick="switchMatchSheetTab('datos')" id="mst-datos" class="step-active px-4 py-3.5 border-b-2 whitespace-nowrap">
+                            1. Datos Generales
+                        </button>
+                        <button onclick="switchMatchSheetTab('alineaciones')" id="mst-alineaciones" class="px-4 py-3.5 border-b-2 border-transparent whitespace-nowrap">
+                            2. Alineaciones
+                        </button>
+                        <button onclick="switchMatchSheetTab('incidencias')" id="mst-incidencias" class="px-4 py-3.5 border-b-2 border-transparent whitespace-nowrap">
+                            3. Incidencias
+                        </button>
+                        <button onclick="switchMatchSheetTab('reporte')" id="mst-reporte" class="px-4 py-3.5 border-b-2 border-transparent whitespace-nowrap">
+                            4. Reporte y Cierre
+                        </button>
+                    </div>
+
+                    <!-- Panel 1: Datos Generales -->
+                    <div id="msp-datos" class="p-5 space-y-4 msp-panel fade-in">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Nombre de la Liga / Torneo</label>
+                                <input type="text" id="ref-league-name" readonly class="w-full px-3 py-2.5 border border-zinc-200 rounded-xl text-xs bg-zinc-100 font-bold text-zinc-950 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">División / Fase</label>
+                                <input type="text" id="ref-match-phase" value="Fase Regular" class="w-full px-3 py-2.5 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none font-semibold text-zinc-800">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-100 pt-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Fecha Programada</label>
+                                <input type="date" id="ref-match-date" class="w-full px-3 py-2.5 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none text-zinc-800 font-semibold">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Hora Pactada</label>
+                                <input type="text" id="ref-match-time" placeholder="09:00 AM" class="w-full px-3 py-2.5 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none font-semibold text-zinc-800">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Instalación y Campo</label>
+                                <input type="text" id="ref-match-venue" class="w-full px-3 py-2.5 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none font-semibold text-zinc-800">
+                            </div>
+                        </div>
+                        <div class="border-t border-zinc-100 pt-3 font-semibold">
+                            <h5 class="text-xs font-extrabold text-zinc-950 mb-2"><i class="fa-solid fa-users-rectangle text-red-600"></i> Designación de Cuerpo Arbitral</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-zinc-400 uppercase mb-0.5">Árbitro Central</label>
+                                    <input type="text" id="ref-crew-central" value="Prof. Miguel Ángel Flores" class="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs bg-white focus:outline-none font-semibold text-zinc-800">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-zinc-400 uppercase mb-0.5">Asistente 1</label>
+                                    <input type="text" id="ref-crew-ast1" value="Lic. Gabriel Romero" class="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs bg-white focus:outline-none font-semibold text-zinc-800">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-zinc-400 uppercase mb-0.5">Asistente 2</label>
+                                    <input type="text" id="ref-crew-ast2" value="Téc. Hugo Sánchez L." class="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs bg-white focus:outline-none font-semibold text-zinc-800">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-zinc-400 uppercase mb-0.5">Cuarto Árbitro</label>
+                                    <input type="text" id="ref-crew-fourth" value="No Aplica" class="w-full px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs bg-white focus:outline-none font-semibold text-zinc-800">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 2: Alineaciones de Equipos -->
+                    <div id="msp-alineaciones" class="p-5 space-y-4 msp-panel fade-in hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Escuadra Local -->
+                            <div class="p-4 border border-zinc-200 rounded-xl bg-white space-y-3 font-semibold">
+                                <span class="bg-zinc-100 text-zinc-800 border border-zinc-200 text-[9px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Escuadra Local</span>
+                                <h5 id="ref-team1-label" class="font-black text-zinc-950 text-sm">--</h5>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-zinc-400 uppercase">Capitán (Dorsal)</label>
+                                        <input type="text" id="ref-cap1" value="Andrés Guardado (#18)" class="w-full px-2 py-1 border rounded bg-zinc-50 font-semibold text-zinc-800">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-zinc-400 uppercase">Portero Titular</label>
+                                        <input type="text" id="ref-gk1" value="Guillermo Ochoa (#13)" class="w-full px-2 py-1 border rounded bg-zinc-50 font-semibold text-zinc-800">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-zinc-400 uppercase">Cuerpo Técnico</label>
+                                    <input type="text" id="ref-staff1" value="Director Técnico: Carlos M. | Aux: Mario P." class="w-full px-2 py-1 border rounded bg-zinc-50 text-xs font-semibold text-zinc-800">
+                                </div>
+                            </div>
+
+                            <!-- Escuadra Visitante -->
+                            <div class="p-4 border border-zinc-200 rounded-xl bg-white space-y-3 font-semibold">
+                                <span class="bg-red-50 text-red-800 border border-red-100 text-[9px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Escuadra Visitante</span>
+                                <h5 id="ref-team2-label" class="font-black text-zinc-950 text-sm">--</h5>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-zinc-400 uppercase">Capitán (Dorsal)</label>
+                                        <input type="text" id="ref-cap2" value="Héctor Moreno (#15)" class="w-full px-2 py-1 border rounded bg-zinc-50 font-semibold text-zinc-800">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-zinc-400 uppercase">Portero Titular</label>
+                                        <input type="text" id="ref-gk2" value="Alfredo Talavera (#1)" class="w-full px-2 py-1 border rounded bg-zinc-50 text-xs font-semibold text-zinc-800">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-zinc-400 uppercase">Cuerpo Técnico</label>
+                                    <input type="text" id="ref-staff2" value="Director Técnico: Marcos L. | Médico: Dr. Díaz" class="w-full px-2 py-1 border rounded bg-zinc-50 text-xs font-semibold text-zinc-800">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 3: Desarrollo e Incidencias -->
+                    <div id="msp-incidencias" class="p-5 space-y-4 msp-panel fade-in hidden">
+                        <div class="bg-white p-4 border border-zinc-200 rounded-xl space-y-4 font-semibold">
+                            <h5 class="font-bold text-xs text-zinc-950 uppercase tracking-wide"><i class="fa-solid fa-plus text-red-600"></i> Registrar Suceso en Partido</h5>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 items-end">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-zinc-400 uppercase">Equipo</label>
+                                    <select id="inc-team" class="w-full px-2 py-1.5 border border-zinc-200 rounded-lg text-xs bg-zinc-50 focus:outline-none font-semibold text-zinc-800">
+                                        <option value="local">Local</option>
+                                        <option value="visitante">Visitante</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-zinc-400 uppercase">Suceso</label>
+                                    <select id="inc-type" class="w-full px-2 py-1.5 border border-zinc-200 rounded-lg text-xs bg-zinc-50 focus:outline-none font-semibold text-zinc-800">
+                                        <option value="Gol">⚽ Gol</option>
+                                        <option value="Amarilla">🟨 Tarjeta Amarilla</option>
+                                        <option value="Roja">🟥 Tarjeta Roja</option>
+                                        <option value="Sustitucion">🔄 Sustitución</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-zinc-400 uppercase">Minuto</label>
+                                    <input type="number" id="inc-minute" min="1" max="120" value="15" class="w-full px-2 py-1 border border-zinc-200 rounded-lg text-xs focus:outline-none font-semibold text-zinc-800">
+                                </div>
+                                <div class="col-span-2 md:col-span-1">
+                                    <label class="block text-[9px] font-bold text-zinc-400 uppercase">Atleta (Nombre / Dorsal)</label>
+                                    <input type="text" id="inc-player" placeholder="Ej. Juan Pérez (#10)" class="w-full px-2 py-1 rounded-lg border border-zinc-200 text-xs focus:outline-none font-semibold text-zinc-800">
+                                </div>
+                                <div>
+                                    <button onclick="addMatchIncident()" type="button" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1.5 rounded-lg text-xs shadow-xs">
+                                        Registrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 border border-zinc-200 rounded-xl bg-white">
+                            <h6 class="text-xs font-black text-zinc-400 uppercase tracking-wider mb-2">Cronología de Sucesos</h6>
+                            <div id="incidents-list-container" class="space-y-1.5 max-h-40 overflow-y-auto chat-scrollbar text-xs font-semibold"></div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 4: Reporte Arbitral -->
+                    <div id="msp-reporte" class="p-5 space-y-4 msp-panel fade-in hidden">
+                        <div class="font-semibold">
+                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Informe Arbitral y Observaciones Disciplinarias</label>
+                            <textarea id="ref-report-text" rows="4" placeholder="Reportar comportamiento antideportivo, invasiones o anomalías en la instalación..." class="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none font-semibold text-zinc-800"></textarea>
+                        </div>
+                        <div class="border-t border-zinc-100 pt-3 space-y-3 bg-white p-4 rounded-xl border border-zinc-200">
+                            <h5 class="text-xs font-bold text-zinc-700"><i class="fa-solid fa-signature text-red-500"></i> Firmas de Conformidad</h5>
+                            <p class="text-[10px] text-zinc-400">Marque para validar que la información plasmada es correcta.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <label class="flex items-center gap-2 border border-zinc-200 p-2.5 rounded-lg text-xs bg-zinc-50 cursor-pointer font-semibold text-zinc-700">
+                                    <input type="checkbox" id="ref-sig-local" checked class="text-red-600 rounded focus:ring-red-500">
+                                    Capitán Local
+                                </label>
+                                <label class="flex items-center gap-2 border border-zinc-200 p-2.5 rounded-lg text-xs bg-zinc-50 cursor-pointer font-semibold text-zinc-700">
+                                    <input type="checkbox" id="ref-sig-visit" checked class="text-red-600 rounded focus:ring-red-500">
+                                    Capitán Visitante
+                                </label>
+                                <label class="flex items-center gap-2 border border-zinc-200 p-2.5 rounded-lg text-xs bg-zinc-50 cursor-pointer font-semibold text-zinc-700">
+                                    <input type="checkbox" id="ref-sig-central" checked class="text-red-600 rounded focus:ring-red-500">
+                                    Árbitro Central
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="submitMatchSheet()" class="w-full bg-zinc-950 hover:bg-black border-b-2 border-red-600 text-white font-extrabold py-3.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-lg">
+                    <i class="fa-solid fa-lock text-red-500"></i> Oficializar y Guardar Cédula de Partido
+                </button>
+            </div>
+
+            <!-- Chat del Árbitro -->
+            <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm max-w-2xl mx-auto space-y-4">
+                <h4 class="font-extrabold text-sm text-zinc-950 flex items-center gap-1.5">
+                    <i class="fa-solid fa-headset text-red-600"></i> Mesa de Ayuda Directa
+                </h4>
+                <div class="flex flex-col justify-between h-64 bg-zinc-50 border border-zinc-200 rounded-2xl p-4">
+                    <div id="arbitro-chat-box" class="flex-grow overflow-y-auto space-y-3 pr-2 chat-scrollbar font-semibold"></div>
+                    <form onsubmit="handleSendUserChatMessage(event, 'arbitro')" class="mt-3 flex gap-2">
+                        <input type="text" id="arbitro-chat-input" placeholder="Pregunta sobre designación de campos..." required class="flex-grow px-3.5 py-2 border border-zinc-200 rounded-xl text-xs bg-white focus:outline-none font-semibold text-zinc-900">
+                        <button type="submit" class="bg-zinc-950 hover:bg-black text-white font-bold px-5 rounded-xl text-xs">
+                            Enviar <i class="fa-solid fa-paper-plane text-red-500 ml-1"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================= -->
+    <!-- MODALES Y DIÁLOGOS DE ALTA GAMA               -->
+    <!-- ============================================= -->
+    <div id="modal-cedula-report" class="fixed inset-0 bg-zinc-950/70 z-50 flex items-center justify-center p-4 hidden overflow-y-auto transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-3xl w-full p-6 md:p-8 space-y-6 shadow-2xl border border-zinc-200 relative my-8 fade-in">
+            <button onclick="closeModal('modal-cedula-report')" class="absolute top-6 right-6 text-zinc-400 hover:text-zinc-600 text-lg transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            
+            <div class="text-center border-b border-zinc-100 pb-4">
+                <h4 class="text-lg font-black tracking-tight text-zinc-950 uppercase">CÉDULA DE ARBITRAJE OFICIAL</h4>
+                <p class="text-xs text-red-600 font-extrabold" id="mcr-league-info">Cargando...</p>
+                <p class="text-[10px] text-zinc-400 uppercase tracking-wider font-bold mt-0.5" id="mcr-phase-info">--</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
+                <div class="bg-zinc-50 p-4 rounded-xl border border-zinc-200 space-y-2">
+                    <h5 class="font-extrabold text-zinc-800 border-b border-zinc-200 pb-1 uppercase tracking-wider text-[10px]">1. Datos del Encuentro</h5>
+                    <p><strong class="text-zinc-500 font-bold">Fecha y Hora:</strong> <span id="mcr-date-time" class="text-zinc-800 font-bold">--</span></p>
+                    <p><strong class="text-zinc-500 font-bold">Ubicación:</strong> <span id="mcr-venue" class="text-zinc-800 font-bold">--</span></p>
+                    <p><strong class="text-zinc-500 font-bold">Categoría:</strong> <span id="mcr-category" class="text-zinc-800 font-bold">--</span></p>
+                    <div class="pt-2 text-[10px] text-zinc-500 space-y-0.5">
+                        <strong class="text-zinc-700 block mb-1 font-extrabold">Cuerpo Arbitral:</strong>
+                        <p>Central: <span id="mcr-crew-c" class="font-bold text-zinc-800">--</span></p>
+                        <p>Asistente 1: <span id="mcr-crew-a1" class="font-bold text-zinc-800">--</span></p>
+                        <p>Asistente 2: <span id="mcr-crew-a2" class="font-bold text-zinc-800">--</span></p>
+                        <p>Cuarto Árbitro: <span id="mcr-crew-f" class="font-bold text-zinc-800">--</span></p>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-50 p-4 rounded-xl border border-zinc-200 space-y-3">
+                    <h5 class="font-extrabold text-zinc-800 border-b border-zinc-200 pb-1 uppercase tracking-wider text-[10px]">2. Plantillas y Alineación</h5>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-[9px] bg-zinc-950 text-white font-extrabold px-2 py-0.5 rounded" id="mcr-team1-title">Local</span>
+                            <div class="pl-1 mt-1 space-y-0.5 text-[11px] text-zinc-600">
+                                <p>Capitán: <span id="mcr-cap1" class="font-bold text-zinc-800">--</span></p>
+                                <p>Portero: <span id="mcr-gk1" class="font-bold text-zinc-800">--</span></p>
+                                <p class="text-[10px] italic font-semibold text-zinc-500">Staff: <span id="mcr-staff1">--</span></p>
+                            </div>
+                        </div>
+                        <div class="border-t border-zinc-200 pt-2">
+                            <span class="text-[9px] bg-red-600 text-white font-extrabold px-2 py-0.5 rounded" id="mcr-team2-title">Visitante</span>
+                            <div class="pl-1 mt-1 space-y-0.5 text-[11px] text-zinc-600">
+                                <p>Capitán: <span id="mcr-cap2" class="font-bold text-zinc-800">--</span></p>
+                                <p>Portero: <span id="mcr-gk2" class="font-bold text-zinc-800">--</span></p>
+                                <p class="text-[10px] italic font-semibold text-zinc-500">Staff: <span id="mcr-staff2">--</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 p-4 rounded-xl border border-zinc-200 space-y-3 font-semibold">
+                <div class="flex justify-between items-center border-b border-zinc-200 pb-1">
+                    <h5 class="font-extrabold text-zinc-800 uppercase tracking-wider text-[10px]">3. Marcador Final e Incidencias</h5>
+                    <span class="text-sm font-black text-red-600 text-lg" id="mcr-final-score">0 - 0</span>
+                </div>
+                <div class="space-y-1.5 max-h-40 overflow-y-auto chat-scrollbar text-xs text-zinc-700 animate-pulse" id="mcr-incidents-list"></div>
+            </div>
+
+            <div class="bg-zinc-50 p-4 rounded-xl border border-zinc-200 space-y-3 font-semibold">
+                <h5 class="font-extrabold text-zinc-800 border-b border-zinc-200 pb-1 uppercase tracking-wider text-[10px]">4. Reporte Arbitral y Firmas</h5>
+                <div>
+                    <p class="text-[11px] text-zinc-600 leading-relaxed italic font-semibold" id="mcr-report-text">--</p>
+                </div>
+                <div class="grid grid-cols-3 text-center text-[10px] pt-4 font-mono text-zinc-500">
+                    <div class="border-t pt-2 border-zinc-200">
+                        <span class="text-zinc-800 font-bold block" id="mcr-sig-local">--</span>
+                        Capitán Local
+                    </div>
+                    <div></div>
+                    <div class="border-t pt-2 border-zinc-200">
+                        <span class="text-zinc-800 font-bold block" id="mcr-sig-visit">--</span>
+                        Capitán Visitante
+                    </div>
+                </div>
+                <div class="text-center text-[10px] pt-2 font-mono text-zinc-500 border-t border-zinc-200">
+                    <span class="text-zinc-800 font-bold block" id="mcr-sig-central">--</span>
+                    Árbitro Central
+                </div>
+            </div>
+
+            <button onclick="closeModal('modal-cedula-report')" class="w-full bg-zinc-950 hover:bg-black text-white font-bold py-2.5 rounded-xl text-xs transition-colors">
+                Cerrar Cédula
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- MOTOR DE LOGICA DE LA APP (CORE JAVASCRIPT)   -->
+    <!-- ============================================= -->
+    <script>
+        let API_URL = localStorage.getItem('lapzesport_api_url') || "";
+        let editStructureIndex = -1;
+        let currentUserEmail = "";
+        let currentUserRole = "";
+
+        // Estructura Jerárquica de Competencias
+        let localStructure = [
+            { liga: "Liga Premier Colegial", torneo: "Clausura 2026", categoria: "Categoría 2016", deporte: "Fútbol" },
+            { liga: "Liga Premier Colegial", torneo: "Clausura 2026", categoria: "Categoría 2017", deporte: "Fútbol" },
+            { liga: "Liga Premier Colegial", torneo: "Apertura 2026", categoria: "Categoría Libre", deporte: "Fútbol" }
+        ];
+
+        // Base de Datos de Clubes/Equipos
+        let localTeams = [
+            { liga: "Liga Premier Colegial", torneo: "Clausura 2026", category: "Categoría 2016", sport: "Fútbol", teamName: "Leones del Bajío", coordName: "Arturo Palacios", coordEmail: "coord@colegio.edu.mx", coachName: "Carlos M.", coachEmail: "coach@colegio.edu.mx" },
+            { liga: "Liga Premier Colegial", torneo: "Clausura 2026", category: "Categoría 2016", sport: "Fútbol", teamName: "Instituto Patria", coordName: "Diana R.", coordEmail: "diana@patria.com", coachName: "Marcos L.", coachEmail: "marcos@coach.com" },
+            { liga: "Liga Premier Colegial", torneo: "Clausura 2026", category: "Categoría 2016", sport: "Fútbol", teamName: "Academia Santos", coordName: "Hugo G.", coordEmail: "hugo@santos.com", coachName: "Sandro F.", coachEmail: "sandro@coach.com" },
+            { liga: "Liga Premier Colegial", torneo: "Clausura 2026", category: "Categoría 2016", sport: "Fútbol", teamName: "Real Querétaro", coordName: "Fernando T.", coordEmail: "fernando@real.com", coachName: "José G.", coachEmail: "jose@coach.com" }
+        ];
+
+        // Base de Datos de Árbitros
+        let localReferees = [
+            { id: "ref_1", name: "Prof. Miguel Ángel Flores", address: "Av. Constituyentes #120, Col. Centro", phone: "4421987654", zone: "Zona Centro", status: "Aprobado", email: "ref@arbitros.com" },
+            { id: "ref_2", name: "Gabriel Romero", address: "Felipe Carrillo Puerto #45, Carrillo", phone: "4423456789", zone: "Zona Norte", status: "Aprobado", email: "gabriel@arbitros.com" },
+            { id: "ref_3", name: "Hugo Sánchez L.", address: "Paseo de la República #4000", phone: "4427654321", zone: "Zona Oriente", status: "Aprobado", email: "hugo@arbitros.com" },
+            { id: "ref_4", name: "Árbitro Novato", address: "Av. de la Luz #450", phone: "4421234560", zone: "Zona Poniente", status: "Pendiente", email: "novato@arbitros.com" }
+        ];
+
+        // Calendario de Partidos
+        let localMatches = [
+            { id: "m1", liga: "Liga Premier Colegial", torneo: "Clausura 2026", category: "Categoría 2016", sport: "Fútbol", team1: "Leones del Bajío", score1: 3, team2: "Instituto Patria", score2: 1, jornada: 1, cancha: "Campo Central 1", status: "Jugado", referee: "ref@arbitros.com", fecha: "2026-10-10", hora: "09:00 AM", confirmado: true },
+            { id: "m2", liga: "Liga Premier Colegial", torneo: "Clausura 2026", category: "Categoría 2016", sport: "Fútbol", team1: "Academia Santos", score1: 2, team2: "Real Querétaro", score2: 2, jornada: 1, cancha: "Campo Central 2", status: "Jugado", referee: "gabriel@arbitros.com", fecha: "2026-10-10", hora: "10:30 AM", confirmado: true },
+            { id: "m3", liga: "Liga Premier Colegial", torneo: "Clausura 2026", category: "Categoría 2016", sport: "Fútbol", team1: "Leones del Bajío", score1: null, team2: "Academia Santos", score2: null, jornada: 2, cancha: "Cancha Centenario 1", status: "Pendiente", referee: "", fecha: "2026-10-17", hora: "09:00 AM", confirmado: true },
+            { id: "m4", liga: "Liga Premier Colegial", torneo: "Clausura 2026", category: "Categoría 2016", sport: "Fútbol", team1: "Instituto Patria", score1: null, team2: "Real Querétaro", score2: null, jornada: 2, cancha: "", status: "Pendiente", referee: "", fecha: "", hora: "", confirmado: false }
+        ];
+
+        // Jugadores (Rosters)
+        let localPlayers = [
+            { teamName: "Leones del Bajío", name: "Andrés Guardado", curp: "GUA860928HDFRRND7", number: "18" },
+            { teamName: "Leones del Bajío", name: "Guillermo Ochoa", curp: "OCH850713HDFRRND9", number: "13" }
+        ];
+
+        let localMatchReports = {
+            "m1": {
+                matchId: "m1", liga: "Liga Premier Colegial", torneo: "Clausura 2026", phase: "Fase Regular - Jornada 1", date: "2026-10-10", time: "09:00 AM", venue: "Campo Central 1", category: "Categoría 2016",
+                crewCentral: "Prof. Miguel Ángel Flores", crewAst1: "Lic. Gabriel Romero", crewAst2: "Téc. Hugo Sánchez L.", crewFourth: "No Aplica",
+                cap1: "Andrés Guardado (#18)", gk1: "Guillermo Ochoa (#13)", staff1: "Carlos M. (DT)",
+                cap2: "Héctor Moreno (#15)", gk2: "Alfredo Talavera (#1)", staff2: "Marcos L. (DT)",
+                score1: 3, score2: 1,
+                incidents: [
+                    { type: "Gol", minute: 12, player: "Andrés Guardado (#18)", team: "local" },
+                    { type: "Gol", minute: 40, player: "Guillermo Ochoa (#13)", team: "local" },
+                    { type: "Gol", minute: 60, player: "Héctor Moreno (#15)", team: "visitante" },
+                    { type: "Gol", minute: 85, player: "Andrés Guardado (#18)", team: "local" }
+                ],
+                reportText: "Partido finalizado sin reportes disciplinarios de gravedad.",
+                sigLocal: "FIRMADO", sigVisit: "FIRMADO", sigCentral: "MIGUEL FLO. - CENTRAL"
+            }
+        };
+
+        let chatMessages = [
+            { channel: "coordinador", sender: "coordinador", text: "Buenas tardes administración. Registros listos para validar.", time: "11:00 AM" }
+        ];
+
+        let currentAdminChatChannel = "coordinador";
+        let currentMatchSheetIncidents = [];
+
+        window.onload = function() {
+            if(API_URL) {
+                const apiInput = document.getElementById('api-url-input');
+                if(apiInput) apiInput.value = API_URL;
+                const connLabel = document.getElementById('connection-status-label');
+                if(connLabel) {
+                    connLabel.innerText = "Conectado a Sheets 🟢";
+                    connLabel.className = "text-xs text-red-600 font-extrabold";
+                }
+                fetchDataFromSheets();
+            } else {
+                updateAppUI();
+            }
+        };
+
+        async function fetchDataFromSheets() {
+            if(!API_URL) return;
+            showNotification("Sincronizando", "Leyendo base de datos remota de Sheets...", "info");
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                if (data.status === "success") {
+                    if (data.structures && data.structures.length > 0) localStructure = data.structures;
+                    if (data.teams && data.teams.length > 0) localTeams = data.teams;
+                    if (data.matches && data.matches.length > 0) localMatches = data.matches;
+                    if (data.arbitros && data.arbitros.length > 0) localReferees = data.arbitros;
+                    if (data.players && data.players.length > 0) localPlayers = data.players;
+                    if (data.cedulas && data.cedulas.length > 0) {
+                        data.cedulas.forEach(c => {
+                            let parsed = [];
+                            try { parsed = JSON.parse(c.incidentsJson || "[]"); } catch(e){}
+                            localMatchReports[c.matchId] = {
+                                matchId: c.matchId, liga: c.liga, torneo: c.torneo, phase: c.phase, date: c.date, time: c.time, venue: c.venue, category: c.category,
+                                crewCentral: c.crewCentral, crewAst1: c.crewAst1, crewAst2: c.crewAst2, crewFourth: c.crewFourth,
+                                cap1: c.cap1, gk1: c.gk1, staff1: c.staff1, cap2: c.cap2, gk2: c.gk2, staff2: c.staff2,
+                                score1: c.score1, score2: c.score2, incidents: parsed, reportText: c.reportText,
+                                sigLocal: c.sigLocal, sigVisit: c.sigVisit, sigCentral: c.sigCentral
+                            };
+                        });
+                    }
+                    showNotification("Sincronizado", "Toda la información se cargó exitosamente.", "success");
+                    updateAppUI();
+                }
+            } catch (error) {
+                console.error(error);
+                showNotification("Aviso", "No se pudo sincronizar. Usando base local temporal.", "info");
+                updateAppUI();
+            }
+        }
+
+        function updateAppUI() {
+            renderStructureTable();
+            populateAllCascadingDropdowns();
+            renderDirectories();
+            renderCoordinatorTeams();
+            renderCoordinatorRosters();
+            renderCoachRoster();
+            renderCoachMatchesToConfirm();
+            renderRefereeAdminList();
+            renderPublicViews();
+            renderGlobalConfirmedSedes();
+            renderChatRooms();
+            renderCoordDashboard();
+        }
+
+        function switchAdminSubPanel(panelId) {
+            document.querySelectorAll('.admin-sub-panel').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.admin-tab-btn').forEach(b => {
+                b.className = "admin-tab-btn flex-shrink-0 px-4 py-2.5 text-xs font-black rounded-lg text-zinc-600 hover:bg-zinc-100 transition-all";
+            });
+
+            document.getElementById(`asp-${panelId}`).classList.remove('hidden');
+            document.getElementById(`asb-${panelId}`).className = "admin-tab-btn flex-shrink-0 px-4 py-2.5 text-xs font-black rounded-lg bg-zinc-900 text-white border-b-2 border-red-600 transition-all shadow-sm";
+        }
+
+        function toggleRefereeSignupFields() {
+            const role = document.getElementById('signup-role').value;
+            const schoolWrapper = document.getElementById('signup-school-wrapper');
+            const zoneWrapper = document.getElementById('signup-zone-wrapper');
+            const refDetails = document.getElementById('signup-referee-details');
+
+            if(role === 'arbitro') {
+                schoolWrapper.classList.add('hidden');
+                zoneWrapper.classList.remove('hidden');
+                refDetails.classList.remove('hidden');
+            } else {
+                schoolWrapper.classList.remove('hidden');
+                zoneWrapper.classList.add('hidden');
+                refDetails.classList.add('hidden');
+            }
+        }
+
+        function renderStructureTable() {
+            const tbody = document.getElementById('struct-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            localStructure.forEach((item, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-zinc-50 transition-all";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-zinc-950">${item.liga}</td>
+                    <td class="p-3 text-zinc-500 font-medium">${item.torneo}</td>
+                    <td class="p-3 font-semibold text-zinc-900">${item.categoria}</td>
+                    <td class="p-3 text-red-600 font-extrabold text-[11px]">${item.deporte}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="editStructure(${idx})" class="bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-800 w-7 h-7 rounded-lg flex items-center justify-center transition-all">
+                                <i class="fa-solid fa-pen-to-square text-xs"></i>
+                            </button>
+                            <button onclick="deleteStructure(${idx})" class="bg-red-50 hover:bg-red-100 text-red-700 w-7 h-7 rounded-lg flex items-center justify-center transition-all border border-red-100">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editStructure(idx) {
+            const item = localStructure[idx];
+            editStructureIndex = idx;
+            document.getElementById('struct-liga').value = item.liga;
+            document.getElementById('struct-torneo').value = item.torneo;
+            document.getElementById('struct-categoria').value = item.categoria;
+            document.getElementById('struct-deporte').value = item.deporte;
+
+            const btnSubmit = document.querySelector('form[onsubmit="handleCreateStructure(event)"] button[type="submit"]');
+            if (btnSubmit) btnSubmit.innerText = "Actualizar Estructura";
+        }
+
+        async function deleteStructure(idx) {
+            localStructure.splice(idx, 1);
+            updateAppUI();
+            showNotification("Estructura Removida", "Se eliminó el registro de la jerarquía de liga.", "info");
+            await syncStructuresWithSheets();
+        }
+
+        async function syncStructuresWithSheets() {
+            if(!API_URL) return;
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({ action: "saveAllStructures", structures: localStructure })
+                });
+            } catch (e){}
+        }
+
+        async function handleCreateStructure(event) {
+            event.preventDefault();
+            const newItem = {
+                liga: document.getElementById('struct-liga').value.trim(),
+                torneo: document.getElementById('struct-torneo').value.trim(),
+                categoria: document.getElementById('struct-categoria').value,
+                deporte: document.getElementById('struct-deporte').value
+            };
+
+            if (editStructureIndex === -1) {
+                localStructure.push(newItem);
+                showNotification("Creado", "Estructura cargada de manera exitosa.", "success");
+            } else {
+                localStructure[editStructureIndex] = newItem;
+                showNotification("Actualizado", "Jerarquía editada correctamente.", "success");
+                editStructureIndex = -1;
+                document.querySelector('form[onsubmit="handleCreateStructure(event)"] button[type="submit"]').innerText = "Sincronizar Estructura";
+            }
+            updateAppUI();
+            event.target.reset();
+            await syncStructuresWithSheets();
+        }
+
+        function populateAllCascadingDropdowns() {
+            const panels = ['public', 'admin', 'coord', 'ref', 'rj'];
+            panels.forEach(prefix => populateLigasFor(prefix));
+        }
+
+        function populateLigasFor(prefix) {
+            const select = document.getElementById(`${prefix}-liga`);
+            if(!select) return;
+            const currentVal = select.value;
+            select.innerHTML = "";
+            const ligas = [...new Set(localStructure.map(s => s.liga))];
+            ligas.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l; opt.innerText = l; select.appendChild(opt);
+            });
+            if(currentVal && ligas.includes(currentVal)) select.value = currentVal;
+            onCascadingChange(prefix, 'liga');
+        }
+
+        function onCascadingChange(prefix, typeChanged) {
+            const selectLiga = document.getElementById(`${prefix}-liga`);
+            const selectTorneo = document.getElementById(`${prefix}-torneo`);
+            const selectCat = document.getElementById(prefix === 'rj' ? 'rj-category-select' : `${prefix}-category`);
+            const sportInput = document.getElementById(`${prefix}-sport`);
+
+            if(!selectLiga) return;
+            const selectedLiga = selectLiga.value;
+
+            if (typeChanged === 'liga' && selectTorneo) {
+                const currentTorneoVal = selectTorneo.value;
+                selectTorneo.innerHTML = "";
+                const torneos = [...new Set(localStructure.filter(s => s.liga === selectedLiga).map(s => s.torneo))];
+                torneos.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t; opt.innerText = t; selectTorneo.appendChild(opt);
+                });
+                if(currentTorneoVal && torneos.includes(currentTorneoVal)) selectTorneo.value = currentTorneoVal;
+            }
+
+            const selectedTorneo = selectTorneo ? selectTorneo.value : "";
+
+            if((typeChanged === 'liga' || typeChanged === 'torneo') && selectCat) {
+                const currentCatVal = selectCat.value;
+                selectCat.innerHTML = "";
+                const categorias = localStructure.filter(s => s.liga === selectedLiga && s.torneo === selectedTorneo);
+                categorias.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.categoria; opt.innerText = c.categoria; selectCat.appendChild(opt);
+                });
+                if(currentCatVal && categorias.some(c => c.categoria === currentCatVal)) selectCat.value = currentCatVal;
+            }
+
+            const selectedCat = selectCat ? selectCat.value : "";
+            if(sportInput) {
+                const struct = localStructure.find(s => s.liga === selectedLiga && s.torneo === selectedTorneo && s.categoria === selectedCat);
+                sportInput.value = struct ? struct.deporte : "Fútbol";
+            }
+
+            if(prefix === 'public') renderPublicViews();
+            else if(prefix === 'rj') renderRjCategoryAdmin();
+            else if(prefix === 'ref') updateRefMatchesSelect();
+        }
+
+        function renderDirectories() {
+            const container = document.getElementById('admin-directory-container');
+            if(!container) return;
+            container.innerHTML = "";
+            const ligas = [...new Set(localTeams.map(t => t.liga))];
+            if(ligas.length === 0) {
+                container.innerHTML = `<div class="text-center text-zinc-400 py-6 text-xs font-semibold">Sin equipos en el directorio.</div>`;
+                return;
+            }
+            ligas.forEach(liga => {
+                const torneos = [...new Set(localTeams.filter(t => t.liga === liga).map(t => t.torneo))];
+                torneos.forEach(torneo => {
+                    const cats = [...new Set(localTeams.filter(t => t.liga === liga && t.torneo === torneo).map(t => t.category))];
+                    cats.forEach(cat => {
+                        const teams = localTeams.filter(t => t.liga === liga && t.torneo === torneo && t.category === cat);
+                        if(teams.length === 0) return;
+                        const section = document.createElement('div');
+                        section.className = "mb-4 border border-zinc-200 p-4 rounded-xl bg-zinc-50/50 shadow-xs";
+                        section.innerHTML = `
+                            <h4 class="text-[10px] font-black text-red-700 bg-red-50 border border-red-100 px-3 py-1 rounded mb-2 uppercase tracking-wider">
+                                ${liga} ➔ ${torneo} ➔ ${cat} (${teams[0].sport})
+                            </h4>
+                            <table class="w-full text-left text-xs font-semibold text-zinc-700">
+                                <tbody class="divide-y divide-zinc-100">
+                                    ${teams.map(t => `
+                                        <tr>
+                                            <td class="py-2.5 font-bold text-zinc-950">${t.teamName}</td>
+                                            <td class="py-2.5 text-[10px] text-zinc-500 leading-relaxed font-semibold">
+                                                Coord: ${t.coordName} (${t.coordEmail})<br>Coach: ${t.coachName} (${t.coachEmail})
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        `;
+                        container.appendChild(section);
+                    });
+                });
+            });
+        }
+
+        async function handleAdminCreateTeam(event) {
+            event.preventDefault();
+            const liga = document.getElementById('admin-liga').value;
+            const torneo = document.getElementById('admin-torneo').value;
+            const categoriesForTorneo = localStructure.filter(s => s.liga === liga && s.torneo === torneo);
+            
+            if (categoriesForTorneo.length === 0) {
+                showNotification("Aviso", "No se han creado categorías para este torneo en el Gestor de Estructura.", "error");
+                return;
+            }
+
+            const teamName = document.getElementById('admin-team-name').value.trim();
+            const coordName = document.getElementById('admin-coord-name').value.trim();
+            const coordEmail = document.getElementById('admin-coord-email').value.trim();
+            const coachName = document.getElementById('admin-coach-name').value.trim();
+            const coachEmail = document.getElementById('admin-coach-email').value.trim();
+
+            categoriesForTorneo.forEach(struct => {
+                const newTeam = {
+                    liga, torneo, category: struct.categoria, sport: struct.deporte,
+                    teamName, coordName, coordEmail, coachName, coachEmail
+                };
+                if (!localTeams.some(t => t.liga === liga && t.torneo === torneo && t.category === struct.categoria && t.teamName === teamName)) {
+                    localTeams.push(newTeam);
+                }
+            });
+
+            updateAppUI();
+            showNotification("Sincronizado", "El equipo ha sido inscrito en todas las categorías asociadas.", "success");
+            event.target.reset();
+
+            if(API_URL) {
+                try {
+                    for(let struct of categoriesForTorneo) {
+                        await fetch(API_URL, {
+                            method: "POST",
+                            headers: { "Content-Type": "text/plain" },
+                            body: JSON.stringify({
+                                action: "createTeam", liga, torneo, category: struct.categoria, sport: struct.deporte,
+                                teamName, coordName, coordEmail, coachName, coachEmail
+                            })
+                        });
+                    }
+                } catch(e){}
+            }
+        }
+
+        async function handleAdminCreateReferee(event) {
+            event.preventDefault();
+            const newRef = {
+                id: "arb_" + new Date().getTime(),
+                name: document.getElementById('admin-ref-name').value.trim(),
+                address: document.getElementById('admin-ref-address').value.trim(),
+                phone: document.getElementById('admin-ref-phone').value.trim(),
+                zone: document.getElementById('admin-ref-zone').value,
+                status: "Aprobado",
+                email: document.getElementById('admin-ref-email').value.trim()
+            };
+            localReferees.push(newRef);
+            updateAppUI();
+            showNotification("Sincronizado", "Árbitro registrado y habilitado para asignar.", "success");
+            event.target.reset();
+
+            if(API_URL) {
+                try {
+                    await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify({ action: "createRefereeAdmin", ...newRef })
+                    });
+                } catch(e){}
+            }
+        }
+
+        function renderRefereeAdminList() {
+            const tbody = document.getElementById('admin-ref-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            const filter = document.getElementById('admin-ref-filter-zone').value;
+            let list = localReferees;
+            if(filter !== 'todas') list = localReferees.filter(r => r.zone === filter);
+
+            list.forEach(ref => {
+                const isApproved = ref.status === 'Aprobado';
+                const badge = isApproved 
+                    ? `<span class="bg-emerald-100 text-emerald-850 border border-emerald-200 px-2 py-0.5 rounded font-bold text-[9px] uppercase tracking-wide">Aprobado</span>`
+                    : `<span class="bg-red-50 text-red-700 border border-red-100 px-2 py-0.5 rounded font-bold text-[9px] uppercase tracking-wide">Pendiente</span>`;
+                
+                const actionBtn = isApproved
+                    ? `<button onclick="updateRefereeStatus('${ref.id}', 'Pendiente')" class="bg-zinc-50 hover:bg-zinc-100 text-zinc-700 text-[10px] font-bold py-1 px-2.5 rounded border border-zinc-200">Revisar</button>`
+                    : `<button onclick="updateRefereeStatus('${ref.id}', 'Aprobado')" class="bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold py-1 px-2.5 rounded shadow-xs">Aprobar</button>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-zinc-50 transition-all";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-zinc-950">${ref.name}<span class="block text-[10px] text-zinc-400 font-semibold">${ref.email}</span></td>
+                    <td class="p-3 text-zinc-500 font-semibold">${ref.address}<span class="block text-[10px] text-zinc-400 font-bold">📱 ${ref.phone}</span></td>
+                    <td class="p-3 text-center font-bold text-red-600 text-[11px]">${ref.zone}</td>
+                    <td class="p-3 text-center">${badge}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            ${actionBtn}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function updateRefereeStatus(id, newStatus) {
+            const ref = localReferees.find(r => r.id === id);
+            if(!ref) return;
+            ref.status = newStatus;
+            updateAppUI();
+            showNotification("Estatus Modificado", `${ref.name}: ${newStatus}`, "success");
+            if(API_URL) {
+                try {
+                    await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify({ action: "approveReferee", id, status: newStatus })
+                    });
+                } catch(e){}
+            }
+        }
+
+        async function handleCoordCreateTeam(event) {
+            event.preventDefault();
+            const newTeam = {
+                liga: document.getElementById('coord-liga').value,
+                torneo: document.getElementById('coord-torneo').value,
+                category: document.getElementById('coord-category').value,
+                sport: document.getElementById('coord-sport').value,
+                teamName: document.getElementById('coord-team-name').value.trim(),
+                coordName: document.getElementById('user-profile-name').innerText,
+                coordEmail: currentUserEmail,
+                coachName: "Coach Coordinado",
+                coachEmail: document.getElementById('coord-coach-email').value.trim()
+            };
+            localTeams.push(newTeam);
+            updateAppUI();
+            showNotification("Escuadra Habilitada", `${newTeam.teamName} se registró en sistema.`, "success");
+            event.target.reset();
+            if(API_URL) {
+                try {
+                    await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify({ action: "createTeam", ...newTeam })
+                    });
+                } catch(e){}
+            }
+        }
+
+        function renderCoordinatorTeams() {
+            const tbody = document.getElementById('coord-teams-list');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            const myTeams = localTeams.filter(t => t.coordEmail === currentUserEmail);
+            myTeams.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-zinc-50 transition-all";
+                tr.innerHTML = `
+                    <td class="p-2.5 font-bold text-zinc-950">${t.teamName}</td>
+                    <td class="p-2.5 text-zinc-500 text-[11px] font-semibold">${t.liga}<br>${t.torneo}</td>
+                    <td class="p-2.5 text-zinc-500 text-[11px] font-semibold">${t.category} | ${t.sport}</td>
+                    <td class="p-2.5 text-center">
+                        <span class="bg-red-50 text-red-700 border border-red-100 px-3 py-0.5 rounded font-black text-[9px] uppercase">Roster Listo</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderCoordinatorRosters() {
+            const tbody = document.getElementById('coord-rosters-list');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            
+            const myTeams = localTeams.filter(t => t.coordEmail === currentUserEmail).map(t => t.teamName);
+            const myPlayers = localPlayers.filter(p => myTeams.includes(p.teamName));
+
+            if(myPlayers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-zinc-400 font-semibold">Tus directores técnicos aún no han registrado atletas al roster.</td></tr>`;
+                return;
+            }
+
+            myPlayers.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-zinc-50 transition-all";
+                tr.innerHTML = `
+                    <td class="p-2.5 text-red-700 font-black">${p.teamName}</td>
+                    <td class="p-2.5 font-semibold">${p.name}</td>
+                    <td class="p-2.5 font-mono text-zinc-500">${p.curp}</td>
+                    <td class="p-2.5 text-center font-bold text-zinc-900">${p.number}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderCoachRoster() {
+            const tbody = document.getElementById('coach-players-list');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            
+            const myTeamObj = localTeams.find(t => t.coachEmail === currentUserEmail);
+            if(!myTeamObj) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-3 text-center text-zinc-400 font-semibold">Su perfil no cuenta con escuadra asignada.</td></tr>`;
+                document.getElementById('roster-count').innerText = `0 Atletas`;
+                return;
+            }
+
+            const teamPlayers = localPlayers.filter(p => p.teamName === myTeamObj.teamName);
+            document.getElementById('roster-count').innerText = `${teamPlayers.length} Atletas`;
+
+            teamPlayers.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-zinc-50 transition-all";
+                tr.innerHTML = `
+                    <td class="p-2 font-bold text-zinc-950">${p.name}</td>
+                    <td class="p-2 text-zinc-500 text-[11px] font-mono">${p.curp}</td>
+                    <td class="p-2 text-[11px] text-zinc-600 font-bold">${p.number}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function handleAddPlayer(event) {
+            event.preventDefault();
+            const myTeamObj = localTeams.find(t => t.coachEmail === currentUserEmail);
+            if(!myTeamObj) {
+                showNotification("Aviso", "No cuenta con escuadra deportiva registrada.", "error");
+                return;
+            }
+
+            const player = {
+                name: document.getElementById('player-name').value.trim(),
+                curp: document.getElementById('player-curp').value.toUpperCase().trim(),
+                number: document.getElementById('player-number').value,
+                teamName: myTeamObj.teamName
+            };
+
+            localPlayers.push(player);
+            updateAppUI();
+            showNotification("Atleta Registrado", "Jugador acreditado para el Roster oficial.", "success");
+            event.target.reset();
+
+            if(API_URL) {
+                try {
+                    await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify({ action: "addPlayer", ...player })
+                    });
+                } catch(e){}
+            }
+        }
+
+        function renderCoachMatchesToConfirm() {
+            const select = document.getElementById('coach-match-select');
+            if(!select) return;
+            select.innerHTML = "";
+
+            const myTeamObj = localTeams.find(t => t.coachEmail === currentUserEmail);
+            if(!myTeamObj) {
+                const opt = document.createElement('option');
+                opt.innerText = "No se localizaron partidos";
+                select.appendChild(opt);
+                return;
+            }
+
+            const localMatchesToConfirm = localMatches.filter(m => m.team1 === myTeamObj.teamName && !m.confirmado);
+
+            if(localMatchesToConfirm.length === 0) {
+                const opt = document.createElement('option');
+                opt.innerText = "No hay programaciones pendientes de local";
+                select.appendChild(opt);
+                return;
+            }
+
+            localMatchesToConfirm.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.innerText = `Jor ${m.jornada} contra ${m.team2} (${m.category})`;
+                select.appendChild(opt);
+            });
+        }
+
+        async function submitCoachMatchProgram() {
+            const matchId = document.getElementById('coach-match-select').value;
+            const cancha = document.getElementById('coach-venue-proposed').value.trim();
+            const fecha = document.getElementById('coach-date-proposed').value;
+            const hora = document.getElementById('coach-time-proposed').value.trim();
+
+            if(!matchId || matchId.includes("No hay")) {
+                showNotification("Aviso", "No cuenta con partido seleccionado.", "error");
+                return;
+            }
+            if(!cancha || !fecha || !hora) {
+                showNotification("Campos Incompletos", "Por favor asiente sede, fecha y hora.", "error");
+                return;
+            }
+
+            const match = localMatches.find(m => m.id === matchId);
+            if(match) {
+                match.cancha = cancha;
+                match.fecha = fecha;
+                match.hora = hora;
+                match.confirmado = true;
+                
+                updateAppUI();
+                showNotification("Sede Pactada", "Sede de partido confirmada. Notificado a mesa de control.", "success");
+                
+                document.getElementById('coach-venue-proposed').value = "";
+                document.getElementById('coach-date-proposed').value = "";
+                document.getElementById('coach-time-proposed').value = "";
+
+                if(API_URL) {
+                    try {
+                        await fetch(API_URL, {
+                            method: "POST",
+                            headers: { "Content-Type": "text/plain" },
+                            body: JSON.stringify({ action: "confirmMatchSchedule", matchId, cancha, fecha, hora })
+                        });
+                    } catch(e){}
+                }
+            }
+        }
+
+        function renderRjCategoryAdmin() {
+            const liga = document.getElementById('rj-liga').value;
+            const torneo = document.getElementById('rj-torneo').value;
+            const cat = document.getElementById('rj-category-select').value;
+            const container = document.getElementById('rj-admin-matches-list');
+            if(!container) return;
+            container.innerHTML = "";
+
+            const matches = localMatches.filter(m => m.liga === liga && m.torneo === torneo && m.category === cat);
+            document.getElementById('rj-stats-label').innerText = `${matches.length} Partidos`;
+
+            if(matches.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-zinc-400 text-xs font-semibold">No se han sorteado partidos en esta jerarquía.</div>`;
+                return;
+            }
+
+            const approvedReferees = localReferees.filter(r => r.status === 'Aprobado');
+
+            matches.forEach(m => {
+                const isPlayed = m.status === "Jugado";
+                const isConf = m.confirmado;
+                const statusColor = isConf ? "bg-red-50 text-red-700 border-red-100" : "bg-zinc-100 text-zinc-800 border-zinc-200";
+                const statusLabel = isPlayed ? "Finalizado 🏁" : (isConf ? "Sede Confirmada ✓" : "Pendiente de Sede");
+                
+                let refereeOptions = `<option value="">-- Designar Árbitro Central --</option>`;
+                approvedReferees.forEach(ref => {
+                    const selected = m.referee === ref.email ? 'selected' : '';
+                    refereeOptions += `<option value="${ref.email}" ${selected}>${ref.name} (${ref.zone})</option>`;
+                });
+
+                const card = document.createElement('div');
+                card.className = "p-4 border border-zinc-200 rounded-xl bg-zinc-50/40 text-xs shadow-xs space-y-3 font-semibold";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="w-1/3">
+                            <span class="font-extrabold text-[10px] text-red-600 block">JORNADA ${m.jornada}</span>
+                            <span class="font-bold text-zinc-950 block truncate">${m.team1}</span>
+                        </div>
+                        <div class="w-1/3 text-center flex flex-col items-center">
+                            <span class="px-2.5 py-0.5 bg-white border border-zinc-200 rounded font-black text-zinc-800 text-[10px]">VS</span>
+                            <span class="text-[9px] text-zinc-400 block mt-1 font-bold">${m.cancha || 'Sin designar'}</span>
+                        </div>
+                        <div class="w-1/3 text-right">
+                            <span class="px-2 py-0.5 rounded border font-bold text-[8px] ${statusColor} inline-block mb-1 uppercase tracking-wider">${statusLabel}</span>
+                            <span class="font-bold text-zinc-950 block truncate">${m.team2}</span>
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-zinc-100 flex items-center justify-between gap-4">
+                        <span class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider"><i class="fa-solid fa-gavel text-red-500 mr-1"></i> Asignar Juez:</span>
+                        <select onchange="assignRefereeToMatch('${m.id}', this.value)" ${!isConf ? 'disabled' : ''} class="flex-grow max-w-[240px] px-2 py-1 border border-zinc-200 rounded-lg text-xs bg-white focus:outline-none text-zinc-850 font-semibold disabled:opacity-50">
+                            ${refereeOptions}
+                        </select>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function assignRefereeToMatch(matchId, refereeEmail) {
+            const match = localMatches.find(m => m.id === matchId);
+            if(!match) return;
+            match.referee = refereeEmail;
+            showNotification("Árbitro Oficial Designado", `Partido de ${match.team1} vs ${match.team2} asignado exitosamente.`, "success");
+            updateAppUI();
+
+            if(API_URL) {
+                try {
+                    await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify({ action: "assignMatchReferee", matchId, refereeEmail })
+                    });
+                } catch(e){}
+            }
+        }
+
+        async function generateRjMatches() {
+            const liga = document.getElementById('rj-liga').value;
+            const torneo = document.getElementById('rj-torneo').value;
+            const cat = document.getElementById('rj-category-select').value;
+            const teams = localTeams.filter(t => t.liga === liga && t.torneo === torneo && t.category === cat);
+
+            if(teams.length < 2) {
+                showNotification("Aviso", "Se requieren mínimo 2 escuadras para generar rol de juegos.", "error");
+                return;
+            }
+
+            localMatches = localMatches.filter(m => !(m.liga === liga && m.torneo === torneo && m.category === cat));
+
+            let list = [...teams];
+            if(list.length % 2 !== 0) list.push({ teamName: "Descanso", dummy: true });
+
+            const num = list.length;
+            const rounds = num - 1;
+            const half = num / 2;
+            let countId = 1;
+            let newMatches = [];
+
+            for(let r = 0; r < rounds; r++) {
+                for(let i = 0; i < half; i++) {
+                    const home = list[i];
+                    const away = list[num - 1 - i];
+
+                    if(home.dummy || away.dummy) continue;
+
+                    let match = {
+                        id: `m_${liga.replace(/ /g,'')}_${torneo.replace(/ /g,'')}_${cat.replace(/ /g,'')}_r${r+1}_c${countId}`,
+                        liga, torneo, category: cat, sport: home.sport,
+                        team1: home.teamName, score1: null,
+                        team2: away.teamName, score2: null,
+                        jornada: r + 1, cancha: "", status: "Pendiente", referee: "",
+                        fecha: "", hora: "", confirmado: false
+                    };
+                    localMatches.push(match);
+                    newMatches.push(match);
+                    countId++;
+                }
+                list.splice(1, 0, list.pop());
+            }
+
+            updateAppUI();
+            showNotification("Sorteo Exitoso", "Rol de juegos (Round Robin) generado y publicado.", "success");
+
+            if(API_URL) {
+                try {
+                    await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify({ action: "saveMatches", liga, torneo, category: cat, matches: newMatches })
+                    });
+                } catch(e){}
+            }
+        }
+
+        function clearRjMatches() {
+            const liga = document.getElementById('rj-liga').value;
+            const torneo = document.getElementById('rj-torneo').value;
+            const cat = document.getElementById('rj-category-select').value;
+            localMatches = localMatches.filter(m => !(m.liga === liga && m.torneo === torneo && m.category === cat));
+            updateAppUI();
+            showNotification("Calendario Limpiado", "Partidos removidos del sorteo de liga.", "info");
+        }
+
+        function switchMatchSheetTab(tab) {
+            document.querySelectorAll('.msp-panel').forEach(p => p.classList.add('hidden'));
+            const tabs = ['datos', 'alineaciones', 'incidencias', 'reporte'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`mst-${t}`);
+                if (btn) {
+                    btn.className = (t === tab) 
+                        ? "step-active px-4 py-3.5 border-b-2 whitespace-nowrap font-bold" 
+                        : "px-4 py-3.5 border-b-2 border-transparent whitespace-nowrap text-zinc-500 hover:text-zinc-700 font-bold";
+                }
+            });
+            const panel = document.getElementById(`msp-${tab}`);
+            if (panel) panel.classList.remove('hidden');
+        }
+
+        function updateRefMatchesSelect() {
+            const liga = document.getElementById('ref-liga').value;
+            const torneo = document.getElementById('ref-torneo').value;
+            const cat = document.getElementById('ref-category').value;
+            const select = document.getElementById('ref-match-select');
+            if(!select) return;
+            select.innerHTML = "";
+
+            const matches = localMatches.filter(m => 
+                m.liga === liga && m.torneo === torneo && m.category === cat && 
+                m.status === "Pendiente" && m.referee === currentUserEmail && m.confirmado
+            );
+
+            if(matches.length === 0) {
+                const opt = document.createElement('option');
+                opt.innerText = "No se localizaron partidos designados";
+                select.appendChild(opt);
+                document.getElementById('ref-team1-label').innerText = "--";
+                document.getElementById('ref-team2-label').innerText = "--";
+                return;
+            }
+
+            matches.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.innerText = `Jor ${m.jornada}: ${m.team1} Vs ${m.team2}`;
+                select.appendChild(opt);
+            });
+            onRefMatchChange();
+        }
+
+        function onRefMatchChange() {
+            const id = document.getElementById('ref-match-select').value;
+            if(!id || id.includes("No se")) {
+                document.getElementById('ref-team1-label').innerText = "--";
+                document.getElementById('ref-team2-label').innerText = "--";
+                return;
+            }
+            const m = localMatches.find(match => match.id === id);
+            if(m) {
+                document.getElementById('ref-team1-label').innerText = m.team1;
+                document.getElementById('ref-team2-label').innerText = m.team2;
+                document.getElementById('ref-match-venue').value = m.cancha;
+                document.getElementById('ref-league-name').value = `${m.liga} - ${m.torneo}`;
+                document.getElementById('ref-match-date').value = m.fecha;
+                document.getElementById('ref-match-time').value = m.hora;
+                currentMatchSheetIncidents = [];
+                renderRefereeIncidentsTimeline();
+            }
+        }
+
+        function addMatchIncident() {
+            const type = document.getElementById('inc-type').value.replace(/[^a-zA-Z]/g, '').trim();
+            const minute = parseInt(document.getElementById('inc-minute').value);
+            const player = document.getElementById('inc-player').value.trim();
+            const team = document.getElementById('inc-team').value;
+
+            if(!player) {
+                showNotification("Aviso", "Por favor ingrese dorsal/nombre del atleta.", "error");
+                return;
+            }
+
+            currentMatchSheetIncidents.push({ type, minute, player, team });
+            currentMatchSheetIncidents.sort((a,b) => a.minute - b.minute);
+            renderRefereeIncidentsTimeline();
+            document.getElementById('inc-player').value = "";
+            showNotification("Incidencia Registrada", "Suceso asentado en cronología.", "success");
+        }
+
+        function removeRefereeIncident(idx) {
+            currentMatchSheetIncidents.splice(idx, 1);
+            renderRefereeIncidentsTimeline();
+        }
+
+        function renderRefereeIncidentsTimeline() {
+            const container = document.getElementById('incidents-list-container');
+            if(!container) return;
+            container.innerHTML = "";
+            if(currentMatchSheetIncidents.length === 0) {
+                container.innerHTML = `<p class="text-zinc-400 italic font-semibold">Sin incidentes registrados aún.</p>`;
+                return;
+            }
+            currentMatchSheetIncidents.forEach((inc, idx) => {
+                const isLocal = inc.team === 'local';
+                const badge = isLocal ? "bg-zinc-100 border-zinc-200 text-zinc-950" : "bg-red-50 border-red-100 text-red-700";
+                let emoji = "⚽";
+                if(inc.type === "Amarilla") emoji = "🟨";
+                if(inc.type === "Roja") emoji = "🟥";
+                if(inc.type === "Sustitucion") emoji = "🔄";
+
+                const div = document.createElement('div');
+                div.className = `flex justify-between items-center p-2 rounded-lg border ${badge}`;
+                div.innerHTML = `
+                    <span><strong>Min ${inc.minute}'</strong> - ${emoji} ${inc.type}: ${inc.player} (${inc.team === 'local' ? 'Local' : 'Visita'})</span>
+                    <button onclick="removeRefereeIncident(${idx})" class="text-red-600 text-[10px] font-extrabold uppercase">Remover</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function submitMatchSheet() {
+            const id = document.getElementById('ref-match-select').value;
+            if(!id || id.includes("No se")) {
+                showNotification("Aviso", "No cuenta con encuentro seleccionado.", "error");
+                return;
+            }
+            const match = localMatches.find(m => m.id === id);
+            if(!match) return;
+
+            const localGoals = currentMatchSheetIncidents.filter(i => i.type === "Gol" && i.team === "local").length;
+            const visitGoals = currentMatchSheetIncidents.filter(i => i.type === "Gol" && i.team === "visitante").length;
+
+            const report = {
+                matchId: id, liga: match.liga, torneo: match.torneo,
+                phase: document.getElementById('ref-match-phase').value,
+                date: document.getElementById('ref-match-date').value,
+                time: document.getElementById('ref-match-time').value,
+                venue: document.getElementById('ref-match-venue').value,
+                category: match.category,
+                crewCentral: document.getElementById('ref-crew-central').value,
+                crewAst1: document.getElementById('ref-crew-ast1').value,
+                crewAst2: document.getElementById('ref-crew-ast2').value,
+                crewFourth: document.getElementById('ref-crew-fourth').value,
+                cap1: document.getElementById('ref-cap1').value,
+                gk1: document.getElementById('ref-gk1').value,
+                staff1: document.getElementById('ref-staff1').value,
+                cap2: document.getElementById('ref-cap2').value,
+                gk2: document.getElementById('ref-gk2').value,
+                staff2: document.getElementById('ref-staff2').value,
+                score1: localGoals, score2: visitGoals,
+                incidents: [...currentMatchSheetIncidents],
+                reportText: document.getElementById('ref-report-text').value || "Partido sin observaciones oficiales.",
+                sigLocal: document.getElementById('ref-sig-local').checked ? "FIRMADO" : "PENDIENTE",
+                sigVisit: document.getElementById('ref-sig-visit').checked ? "FIRMADO" : "PENDIENTE",
+                sigCentral: document.getElementById('ref-sig-central').checked ? "FIRMADO" : "PENDIENTE"
+            };
+
+            localMatchReports[id] = report;
+            match.score1 = localGoals;
+            match.score2 = visitGoals;
+            match.status = "Jugado";
+
+            updateAppUI();
+            showNotification("Cédula Registrada", "Encuentro concluido y asentado correctamente en liga.", "success");
+
+            if(API_URL) {
+                try {
+                    await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify({ action: "submitMatchSheet", ...report })
+                    });
+                } catch(e){}
+            }
+            switchMatchSheetTab('datos');
+        }
+
+        function renderGlobalConfirmedSedes() {
+            const containerPub = document.getElementById('sedes-list-container');
+            const containerGlob = document.getElementById('global-sedes-grid');
+            if(!containerPub || !containerGlob) return;
+
+            containerPub.innerHTML = "";
+            containerGlob.innerHTML = "";
+
+            const confirmedMatches = localMatches.filter(m => m.confirmado);
+
+            if(confirmedMatches.length === 0) {
+                const emptyMsg = `<div class="col-span-full text-center text-zinc-400 py-6 text-xs font-semibold">No se han confirmado sedes de juego oficialmente.</div>`;
+                containerPub.innerHTML = emptyMsg;
+                containerGlob.innerHTML = emptyMsg;
+                return;
+            }
+
+            confirmedMatches.forEach(m => {
+                const refereeName = localReferees.find(r => r.email === m.referee)?.name || "Mesa de control asignará juez";
+                const isFinal = m.status === 'Jugado';
+                const refereeMarkup = isFinal 
+                    ? `<span class="bg-zinc-950 text-white border border-zinc-900 font-extrabold px-3 py-0.5 rounded text-[9px] uppercase tracking-wider">Cerrado 🏁</span>` 
+                    : `<span class="bg-red-50 text-red-700 border border-red-100 font-extrabold px-3 py-0.5 rounded text-[9px] uppercase tracking-wider">${refereeName}</span>`;
+
+                const cardHtml = `
+                    <div class="p-4 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-3 shadow-xs font-semibold text-xs text-zinc-800 hover:shadow-sm transition-all">
+                        <div class="flex justify-between items-center text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
+                            <span>📅 ${m.fecha || 'Sin acordar'}</span>
+                            <span class="text-red-600 font-extrabold">${m.category}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-extrabold text-zinc-950">${m.team1}</span>
+                            <span class="text-[10px] text-zinc-300 font-mono">VS</span>
+                            <span class="font-extrabold text-zinc-950 text-right">${m.team2}</span>
+                        </div>
+                        <div class="border-t border-zinc-100 pt-2 flex justify-between items-center text-xs">
+                            <span class="text-zinc-900 font-bold"><i class="fa-solid fa-map-pin text-red-500 mr-1"></i> Campo: ${m.cancha || 'Por designar'}</span>
+                            <span class="text-zinc-400 font-bold">${m.hora || 'Por designar'}</span>
+                        </div>
+                        <div class="pt-1.5 text-center">
+                            ${refereeMarkup}
+                        </div>
+                    </div>
+                `;
+
+                containerPub.innerHTML += cardHtml;
+                containerGlob.innerHTML += cardHtml;
+            });
+        }
+
+        function renderPublicViews() {
+            const liga = document.getElementById('public-liga').value;
+            const torneo = document.getElementById('public-torneo').value;
+            const cat = document.getElementById('public-category').value;
+
+            const teams = localTeams.filter(t => t.liga === liga && t.torneo === torneo && t.category === cat);
+            const matches = localMatches.filter(m => m.liga === liga && m.torneo === torneo && m.category === cat);
+
+            const container = document.getElementById('pub-content-jornadas');
+            container.innerHTML = "";
+
+            if(teams.length < 2) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-zinc-50 border border-zinc-200 p-6 rounded-2xl text-center font-semibold">
+                        <i class="fa-solid fa-people-group text-red-600 text-2xl mb-2"></i>
+                        <h5 class="font-extrabold text-zinc-950 text-sm">Competencia sin Equipos</h5>
+                        <p class="text-xs text-zinc-500 mt-1">Registre escuadras en el sistema administrativo para visualizar jornadas.</p>
+                    </div>
+                `;
+                document.getElementById('stats-body-rows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-zinc-400 font-semibold">Sin estadísticas habilitadas</td></tr>`;
+                return;
+            }
+
+            if(matches.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white p-6 rounded-2xl text-center border border-dashed border-zinc-300 font-semibold shadow-xs">
+                        <i class="fa-solid fa-calendar-xmark text-zinc-400 text-2xl mb-2"></i>
+                        <h5 class="font-extrabold text-zinc-700 text-sm">Torneo no Sorteado</h5>
+                        <p class="text-xs text-zinc-500 mt-1">Mesa de control administrativo aún no realiza el sorteo de jornadas.</p>
+                    </div>
+                `;
+                document.getElementById('stats-body-rows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-zinc-400 font-semibold">Sin partidos programados</td></tr>`;
+                return;
+            }
+
+            const jornadas = {};
+            matches.forEach(m => {
+                if(!jornadas[m.jornada]) jornadas[m.jornada] = [];
+                jornadas[m.jornada].push(m);
+            });
+
+            Object.keys(jornadas).forEach(jNum => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-3 font-semibold text-zinc-800 text-xs";
+                
+                let html = "";
+                jornadas[jNum].forEach(m => {
+                    const played = m.status === "Jugado";
+                    const isWin1 = played && (m.score1 > m.score2);
+                    const isWin2 = played && (m.score2 > m.score1);
+                    
+                    html += `
+                        <div class="space-y-1.5 py-2 border-b border-zinc-50 last:border-0 font-semibold">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="${isWin1 ? 'font-black text-zinc-950':'text-zinc-500 font-semibold'}">${m.team1}</span>
+                                <span class="bg-zinc-100 px-2.5 py-0.5 rounded font-black text-zinc-800 border border-zinc-200 text-[10px]">${m.score1 !== null ? m.score1 : '-'}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="${isWin2 ? 'font-black text-zinc-950':'text-zinc-500 font-semibold'}">${m.team2}</span>
+                                <span class="bg-zinc-100 px-2.5 py-0.5 rounded font-black text-zinc-800 border border-zinc-200 text-[10px]">${m.score2 !== null ? m.score2 : '-'}</span>
+                            </div>
+                            ${played ? `
+                                <div class="pt-2 text-right">
+                                    <button onclick="openCedulaReportModal('${m.id}')" class="bg-zinc-950 hover:bg-black text-white text-[9px] font-extrabold px-3 py-1 rounded border-b border-red-600 inline-flex items-center gap-1.5 shadow-xs transition-all">
+                                        <i class="fa-solid fa-file-contract text-red-500"></i> Ver Cédula Oficial
+                                    </button>
+                                </div>
+                            ` : `
+                                <div class="pt-1.5 flex justify-between text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
+                                    <span>Campo: ${m.cancha || 'Por acordar'}</span>
+                                    <span class="${m.confirmado ? 'text-emerald-600' : 'text-red-500'}">${m.confirmado ? 'Confirmado' : 'Pendiente'}</span>
+                                </div>
+                            `}
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b pb-2 border-zinc-100 font-bold">
+                        <span class="text-xs font-black text-red-600 uppercase tracking-widest">Jornada ${jNum}</span>
+                        <span class="text-[9px] bg-zinc-950 text-white px-2 py-0.5 rounded font-bold uppercase">Oficial</span>
+                    </div>
+                    <div class="divide-y divide-zinc-100">${html}</div>
+                `;
+                container.appendChild(card);
+            });
+
+            // TABLA DE POSICIONES
+            const stats = {};
+            teams.forEach(t => { stats[t.teamName] = { pj: 0, g: 0, e: 0, p: 0, pts: 0 }; });
+
+            matches.forEach(m => {
+                if(m.status !== "Jugado") return;
+                if(!stats[m.team1] || !stats[m.team2]) return;
+                stats[m.team1].pj++; stats[m.team2].pj++;
+                if(m.score1 > m.score2) {
+                    stats[m.team1].g++; stats[m.team1].pts += 3; stats[m.team2].p++;
+                } else if(m.score2 > m.score1) {
+                    stats[m.team2].g++; stats[m.team2].pts += 3; stats[m.team1].p++;
+                } else {
+                    stats[m.team1].e++; stats[m.team1].pts += 1; stats[m.team2].e++; stats[m.team2].pts += 1;
+                }
+            });
+
+            const sorted = Object.keys(stats).map(name => ({ name, ...stats[name] })).sort((a,b) => b.pts - a.pts);
+            const statsBody = document.getElementById('stats-body-rows');
+            statsBody.innerHTML = "";
+            sorted.forEach((t, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-zinc-50 transition-all";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-zinc-400">#${idx + 1}</td>
+                    <td class="p-3 font-bold text-zinc-950">${t.name}</td>
+                    <td class="p-3 font-semibold text-zinc-500">${t.pj}</td>
+                    <td class="p-3 text-emerald-600 font-bold">${t.g}</td>
+                    <td class="p-3 text-zinc-500 font-semibold">${t.e}</td>
+                    <td class="p-3 text-red-500 font-semibold">${t.p}</td>
+                    <td class="p-3 font-black text-red-600 text-sm">${t.pts}</td>
+                `;
+                statsBody.appendChild(tr);
+            });
+
+            const historySelect = document.getElementById('pub-team-history-select');
+            historySelect.innerHTML = "";
+            teams.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.teamName; opt.innerText = t.teamName; historySelect.appendChild(opt);
+            });
+            renderTeamIndividualHistory();
+        }
+
+        function renderTeamIndividualHistory() {
+            const teamName = document.getElementById('pub-team-history-select').value;
+            if(!teamName) return;
+            const liga = document.getElementById('public-liga').value;
+            const torneo = document.getElementById('public-torneo').value;
+            const cat = document.getElementById('public-category').value;
+
+            const team = localTeams.find(t => t.teamName === teamName && t.liga === liga && t.torneo === torneo && t.category === cat);
+            if(!team) return;
+
+            document.getElementById('libreta-team-name').innerText = team.teamName.toUpperCase();
+            document.getElementById('libreta-team-details').innerText = `Categoría: ${team.category} | Deporte: ${team.sport}`;
+
+            const matches = localMatches.filter(m => m.liga === liga && m.torneo === torneo && m.category === cat && (m.team1 === teamName || m.team2 === teamName));
+            const list = document.getElementById('libreta-games-list');
+            list.innerHTML = "";
+
+            if(matches.length === 0) {
+                list.innerHTML = `<div class="text-zinc-400 italic font-semibold">Sin encuentros de liga registrados.</div>`;
+                return;
+            }
+
+            matches.forEach(m => {
+                const isTeam1 = m.team1 === teamName;
+                const opp = isTeam1 ? m.team2 : m.team1;
+                if(m.status !== "Jugado") {
+                    list.innerHTML += `
+                        <div class="py-2.5 border-b border-red-100 flex justify-between font-semibold text-zinc-800">
+                            <span>• Jor ${m.jornada}: Vs ${opp}</span>
+                            <span class="text-zinc-400 font-bold uppercase tracking-wider text-[10px]">${m.confirmado ? 'Confirmado' : 'Falta programar'}</span>
+                        </div>
+                    `;
+                } else {
+                    const myG = isTeam1 ? m.score1 : m.score2;
+                    const oppG = isTeam1 ? m.score2 : m.score1;
+                    const res = (myG > oppG) ? "Victoria 🟢" : (oppG > myG) ? "Derrota 🔴" : "Empate 🟡";
+                    list.innerHTML += `
+                        <div class="py-2.5 border-b border-red-100 flex justify-between font-semibold text-zinc-800">
+                            <span>• Jor ${m.jornada}: Vs ${opp}</span>
+                            <span class="font-bold text-zinc-950">${myG} - ${oppG} <span class="text-[10px] font-sans ml-1">${res}</span></span>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function renderCoordDashboard() {
+            const container = document.getElementById('admin-coord-dashboard-container');
+            if(!container) return;
+            container.innerHTML = "";
+
+            const searchQuery = document.getElementById('admin-coord-search').value.toLowerCase().trim();
+            const sportFilter = document.getElementById('admin-coord-filter-sport').value;
+
+            const coordGroups = {};
+            localTeams.forEach(t => {
+                const email = t.coordEmail || "sin_correo@colegio.edu.mx";
+                if(!coordGroups[email]) {
+                    coordGroups[email] = {
+                        name: t.coordName || "Coordinador Institucional",
+                        email: email,
+                        teams: []
+                    };
+                }
+                coordGroups[email].teams.push(t);
+            });
+
+            const coordEmails = Object.keys(coordGroups);
+            let visibleCoordsCount = 0;
+
+            coordEmails.forEach(email => {
+                const coord = coordGroups[email];
+                
+                const filteredTeams = coord.teams.filter(t => {
+                    const matchesSport = sportFilter === "todos" || t.sport.includes(sportFilter);
+                    const matchesSearch = searchQuery === "" || 
+                        coord.name.toLowerCase().includes(searchQuery) || 
+                        t.teamName.toLowerCase().includes(searchQuery) ||
+                        coord.email.toLowerCase().includes(searchQuery);
+                    return matchesSport && matchesSearch;
+                });
+
+                if (filteredTeams.length === 0 && searchQuery !== "") return; 
+
+                const teamNames = filteredTeams.map(t => t.teamName);
+                const matches = localMatches.filter(m => {
+                    return teamNames.includes(m.team1) || teamNames.includes(m.team2);
+                });
+
+                visibleCoordsCount++;
+
+                const card = document.createElement('div');
+                card.className = "bg-zinc-50 border border-zinc-200 rounded-2xl p-5 shadow-xs space-y-4 font-semibold text-zinc-800";
+                
+                let teamsHtml = filteredTeams.map(t => `
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-zinc-950 text-white text-[10px] font-bold uppercase tracking-wider border-b border-red-600 shadow-xs">
+                        🏆 ${t.teamName} <span class="text-[8px] text-zinc-400 font-bold">(${t.category} - ${t.sport})</span>
+                    </span>
+                `).join(' ') || `<span class="text-xs text-zinc-400 italic font-semibold">No se localizaron escuadras registradas.</span>`;
+
+                let matchesHtml = "";
+                if (matches.length === 0) {
+                    matchesHtml = `<div class="text-[11px] text-zinc-400 italic py-1 font-semibold">Sin encuentros registrados para este coordinador.</div>`;
+                } else {
+                    matchesHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
+                    matches.forEach(m => {
+                        const isMyTeam1 = teamNames.includes(m.team1);
+                        const myTeam = isMyTeam1 ? m.team1 : m.team2;
+                        const oppTeam = isMyTeam1 ? m.team2 : m.team1;
+                        const isConf = m.confirmado;
+                        const statusBg = isConf ? 'bg-red-50 text-red-700 border-red-100' : 'bg-zinc-100 text-zinc-700 border-zinc-200';
+                        const refereeName = localReferees.find(r => r.email === m.referee)?.name || "Sin asignar";
+
+                        matchesHtml += `
+                            <div class="p-3 bg-white border border-zinc-200 rounded-xl flex flex-col justify-between space-y-2 hover:shadow-sm transition-all">
+                                <div class="flex justify-between items-center text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
+                                    <span>Jor ${m.jornada} • ${m.category}</span>
+                                    <span class="px-1.5 py-0.5 border rounded uppercase text-[8px] ${statusBg}">${isConf ? 'Confirmado' : 'Pendiente'}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="font-extrabold text-zinc-950">${myTeam}</span>
+                                    <span class="text-zinc-300 font-mono">VS</span>
+                                    <span class="text-zinc-600">${oppTeam}</span>
+                                </div>
+                                <div class="border-t border-zinc-100 pt-1.5 text-[10px] space-y-0.5 text-zinc-500 font-semibold leading-relaxed">
+                                    <div>📍 <strong>Sede:</strong> ${m.cancha || 'Por pactar'} (${m.fecha || '--'} @ ${m.hora || '--'})</div>
+                                    <div>🏁 <strong>Árbitro:</strong> ${refereeName}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    matchesHtml += `</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3 border-zinc-200/60">
+                        <div>
+                            <h4 class="font-black text-zinc-950 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-user-tie text-red-600"></i> ${coord.name}
+                                <span class="text-[10px] text-zinc-400 font-normal font-mono">(${coord.email})</span>
+                            </h4>
+                            <p class="text-[11px] text-zinc-500 mt-0.5 font-normal">Supervisión e inscripciones de club</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-zinc-950 text-white text-[11px] font-black px-3.5 py-1 rounded-xl border-b border-red-600">
+                                ${filteredTeams.length} Escuadras
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <h5 class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Escuadras Representadas:</h5>
+                        <div class="flex flex-wrap gap-2">
+                            ${teamsHtml}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-1">
+                        <h5 class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Estatus de Partidos en Sorteo:</h5>
+                        ${matchesHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            if (visibleCoordsCount === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 bg-zinc-50 border border-dashed rounded-2xl border-zinc-300">
+                        <i class="fa-solid fa-user-slash text-zinc-300 text-2xl mb-2"></i>
+                        <p class="text-xs text-zinc-400">No se localizaron coordinadores bajo los filtros seleccionados.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderChatRooms() {
+            const adminBox = document.getElementById('admin-chat-box');
+            if(adminBox) {
+                const msgs = chatMessages.filter(m => m.channel === currentAdminChatChannel);
+                adminBox.innerHTML = msgs.map(m => {
+                    const isAdm = m.sender === 'admin';
+                    const bg = isAdm ? 'bg-zinc-950 text-white border-b-2 border-red-600 self-end ml-auto' : 'bg-white border border-zinc-200 text-zinc-800 self-start mr-auto';
+                    const wrapper = isAdm ? 'flex flex-col items-end' : 'flex flex-col items-start';
+                    return `
+                        <div class="${wrapper} w-full font-semibold">
+                            <span class="text-[9px] text-zinc-400 mb-0.5 font-bold uppercase tracking-wide">${isAdm ? 'Administración' : m.sender.toUpperCase()} • ${m.time}</span>
+                            <div class="px-4 py-2.5 rounded-2xl max-w-sm text-xs font-semibold shadow-xs ${bg}">${m.text}</div>
+                        </div>
+                    `;
+                }).join('');
+                adminBox.scrollTop = adminBox.scrollHeight;
+            }
+
+            ['coordinador', 'coach', 'arbitro'].forEach(role => {
+                const box = document.getElementById(`${role}-chat-box`);
+                if(box) {
+                    const msgs = chatMessages.filter(m => m.channel === role);
+                    box.innerHTML = msgs.map(m => {
+                        const isMe = m.sender === role;
+                        const bg = isMe ? 'bg-zinc-950 text-white border-b-2 border-red-600 self-end ml-auto' : 'bg-white border border-zinc-200 text-zinc-800 self-start mr-auto';
+                        const wrapper = isMe ? 'flex flex-col items-end' : 'flex flex-col items-start';
+                        return `
+                            <div class="${wrapper} w-full font-semibold">
+                                <span class="text-[9px] text-zinc-400 mb-0.5 font-bold uppercase tracking-wider">${isMe ? 'Mí' : 'Administración'} • ${m.time}</span>
+                                <div class="px-4 py-2.5 rounded-2xl max-w-sm text-xs font-semibold shadow-xs ${bg}">${m.text}</div>
+                            </div>
+                        `;
+                    }).join('');
+                    box.scrollTop = box.scrollHeight;
+                }
+            });
+        }
+
+        function switchAdminChatChannel(chan) {
+            currentAdminChatChannel = chan;
+            ['coordinador', 'coach', 'arbitro'].forEach(t => {
+                const btn = document.getElementById(`admin-chat-tab-${t}`);
+                if(btn) {
+                    btn.className = (t === chan) 
+                        ? "w-full text-left p-3 rounded-xl border border-red-200 text-xs font-bold flex justify-between items-center bg-red-50/50 text-red-700" 
+                        : "w-full text-left p-3 rounded-xl border border-zinc-200 text-xs font-bold flex justify-between items-center hover:bg-zinc-50 text-zinc-700";
+                }
+            });
+            document.getElementById('admin-chat-current-title').innerText = `Canal: ${chan === 'arbitro' ? 'Árbitros' : chan + 'es'}`;
+            renderChatRooms();
+        }
+
+        function handleSendAdminChatMessage(event) {
+            event.preventDefault();
+            const input = document.getElementById('admin-chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            chatMessages.push({
+                channel: currentAdminChatChannel, sender: "admin", text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+            input.value = "";
+            renderChatRooms();
+            showNotification("Mensaje Enviado", "Su aviso de control fue enviado de manera oficial.", "success");
+        }
+
+        function handleSendUserChatMessage(event, role) {
+            event.preventDefault();
+            const input = document.getElementById(`${role}-chat-input`);
+            const text = input.value.trim();
+            if(!text) return;
+
+            chatMessages.push({
+                channel: role, sender: role, text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+            input.value = "";
+            renderChatRooms();
+            showNotification("Enviado", "Su consulta se encuentra en bandeja del Administrador.", "success");
+
+            setTimeout(() => {
+                const replies = {
+                    coordinador: "Recibido Coordinador. Su enlace institucional se encuentra bajo validación.",
+                    coach: "Hola Coach, recuerde que para validar atletas de local requiere CURP. Validamos en breve.",
+                    arbitro: "Enterado Juez. Canalizamos su reporte al área de logística deportiva."
+                };
+                chatMessages.push({
+                    channel: role, sender: "admin", text: replies[role] || "Enterado, estamos atendiendo su caso.",
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                renderChatRooms();
+                showNotification("Soporte Técnico", "Recibió respuesta oficial de Mesa de Control.", "info");
+            }, 3000);
+        }
+
+        function openCedulaReportModal(id) {
+            const r = localMatchReports[id];
+            if(!r) {
+                showNotification("No Disponible", "La cédula del partido no se encuentra asentada.", "error");
+                return;
+            }
+            document.getElementById('mcr-league-info').innerText = `${r.liga} - ${r.torneo}`;
+            document.getElementById('mcr-phase-info').innerText = r.phase;
+            document.getElementById('mcr-date-time').innerText = `${r.date} a las ${r.time}`;
+            document.getElementById('mcr-venue').innerText = r.venue;
+            document.getElementById('mcr-category').innerText = r.category;
+            
+            document.getElementById('mcr-crew-c').innerText = r.crewCentral;
+            document.getElementById('mcr-crew-a1').innerText = r.crewAst1;
+            document.getElementById('mcr-crew-a2').innerText = r.crewAst2;
+            document.getElementById('mcr-crew-f').innerText = r.crewFourth;
+
+            document.getElementById('mcr-team1-title').innerText = "Equipo Local";
+            document.getElementById('mcr-cap1').innerText = r.cap1;
+            document.getElementById('mcr-gk1').innerText = r.gk1;
+            document.getElementById('mcr-staff1').innerText = r.staff1;
+
+            document.getElementById('mcr-team2-title').innerText = "Equipo Visitante";
+            document.getElementById('mcr-cap2').innerText = r.cap2;
+            document.getElementById('mcr-gk2').innerText = r.gk2;
+            document.getElementById('mcr-staff2').innerText = r.staff2;
+
+            document.getElementById('mcr-final-score').innerText = `${r.score1} - ${r.score2}`;
+
+            const list = document.getElementById('mcr-incidents-list');
+            list.innerHTML = "";
+            if(r.incidents.length === 0) {
+                list.innerHTML = `<p class="text-zinc-400 italic font-bold">Sin incidentes reportados.</p>`;
+            } else {
+                r.incidents.forEach(inc => {
+                    let emoji = "⚽";
+                    if(inc.type === "Amarilla") emoji = "🟨";
+                    if(inc.type === "Roja") emoji = "🟥";
+                    if(inc.type === "Sustitucion") emoji = "🔄";
+                    list.innerHTML += `<p>• <strong>Minuto ${inc.minute}'</strong> - ${emoji} ${inc.type} de ${inc.player} (${inc.team === 'local' ? 'Local' : 'Visitante'})</p>`;
+                });
+            }
+
+            document.getElementById('mcr-report-text').innerText = r.reportText;
+            document.getElementById('mcr-sig-local').innerText = r.sigLocal;
+            document.getElementById('mcr-sig-visit').innerText = r.sigVisit;
+            document.getElementById('mcr-sig-central').innerText = r.sigCentral;
+
+            document.getElementById('modal-cedula-report').classList.remove('hidden');
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function showNotification(title, message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `fade-in p-4 rounded-xl border shadow-lg flex gap-3 items-start bg-white pointer-events-auto transition-all duration-300 transform translate-y-2 font-semibold`;
+            
+            let border = "border-emerald-200 bg-emerald-50/20";
+            let icon = `<i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>`;
+            
+            if(type === 'error') {
+                border = "border-red-200 bg-red-50/20";
+                icon = `<i class="fa-solid fa-circle-exclamation text-red-600 text-lg"></i>`;
+            } else if(type === 'info') {
+                border = "border-zinc-200 bg-zinc-50/20";
+                icon = `<i class="fa-solid fa-circle-info text-zinc-600 text-lg"></i>`;
+            }
+
+            toast.innerHTML = `
+                <div class="p-1 rounded-lg ${border}">${icon}</div>
+                <div class="flex-grow">
+                    <h6 class="text-xs font-black text-zinc-950">${title}</h6>
+                    <p class="text-[11px] text-zinc-500 mt-0.5 leading-relaxed font-semibold">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-zinc-600 text-xs transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+        }
+
+        function saveApiUrlFromInput() {
+            const val = document.getElementById('api-url-input').value.trim();
+            if(val && val.startsWith("https://script.google.com")) {
+                localStorage.setItem('lapzesport_api_url', val);
+                API_URL = val;
+                const connLabel = document.getElementById('connection-status-label');
+                if(connLabel) {
+                    connLabel.innerText = "Conectado a Sheets 🟢";
+                    connLabel.className = "text-xs text-red-600 font-extrabold";
+                }
+                showNotification("Sincronización Lograda", "API de Google Sheets enlazada correctamente.", "success");
+                fetchDataFromSheets();
+            } else {
+                showNotification("Dirección Inválida", "Inserte una URL válida de Apps Script.", "error");
+            }
+        }
+
+        function copyScriptCode() {
+            const area = document.createElement('textarea');
+            area.value = document.getElementById('hidden-script-code').value;
+            document.body.appendChild(area);
+            area.select();
+            document.execCommand('copy');
+            document.body.removeChild(area);
+            showNotification("Copiado", "Script guardado en portapapeles.", "success");
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            let role = "Coordinador";
+            if (email.includes("admin")) role = "Administrador Global";
+            if (email.includes("coach")) role = "Coach";
+            if (email.includes("ref") || email.includes("arbitro") || email.includes("gabriel") || email.includes("hugo") || email.includes("novato")) role = "Árbitro";
+            quickLogin(email, role);
+        }
+
+        function quickLogin(email, roleName) {
+            currentUserEmail = email;
+            currentUserRole = roleName;
+
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('public-screen').classList.add('hidden');
+            document.getElementById('pending-screen').classList.add('hidden');
+            document.getElementById('main-header').classList.add('hidden');
+            document.getElementById('app-main-content').classList.add('hidden');
+            document.getElementById('panel-global-sedes').classList.add('hidden');
+
+            if (roleName === "Árbitro") {
+                const referee = localReferees.find(r => r.email === email);
+                if (referee && referee.status !== "Aprobado") {
+                    document.getElementById('pending-referee-name').innerText = referee.name;
+                    document.getElementById('pending-referee-zone').innerText = referee.zone;
+                    document.getElementById('pending-screen').classList.remove('hidden');
+                    return;
+                }
+            }
+
+            document.getElementById('main-header').classList.remove('hidden');
+            document.getElementById('app-main-content').classList.remove('hidden');
+            document.getElementById('panel-global-sedes').classList.remove('hidden');
+            document.getElementById('user-profile-name').innerText = email.split('@')[0].toUpperCase();
+            document.getElementById('user-profile-role').innerText = roleName;
+
+            document.querySelectorAll('.role-panel').forEach(p => p.classList.add('hidden'));
+
+            if (roleName === "Administrador Global") {
+                document.getElementById('panel-admin').classList.remove('hidden');
+                switchAdminSubPanel('dash');
+            } else if (roleName === "Coordinador") {
+                document.getElementById('panel-coordinator').classList.remove('hidden');
+            } else if (roleName === "Coach") {
+                document.getElementById('panel-coach').classList.remove('hidden');
+                const myTeamObj = localTeams.find(t => t.coachEmail === email);
+                document.getElementById('coach-active-team').innerText = myTeamObj ? `Diriges: ${myTeamObj.teamName}` : "Escuadra no asignada";
+            } else if (roleName === "Árbitro") {
+                document.getElementById('panel-referee').classList.remove('hidden');
+            }
+            updateAppUI();
+            showNotification("Acceso Autorizado", `Rol activo: ${roleName.toUpperCase()}.`, "success");
+        }
+
+        function handleLogOut() {
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('main-header').classList.add('hidden');
+            document.getElementById('app-main-content').classList.add('hidden');
+            document.getElementById('pending-screen').classList.add('hidden');
+            document.getElementById('panel-global-sedes').classList.add('hidden');
+            currentUserEmail = "";
+            currentUserRole = "";
+            showNotification("Sesión Finalizada", "Has salido del portal de forma segura.", "info");
+        }
+
+        function switchAuthTab(tab) {
+            if(tab === 'signup') {
+                document.getElementById('form-login').classList.add('hidden');
+                document.getElementById('form-signup').classList.remove('hidden');
+                document.getElementById('auth-tab-signup').className = "w-1/2 text-center pb-2.5 font-bold text-sm border-b-2 border-red-600 text-red-600 transition-all";
+                document.getElementById('auth-tab-login').className = "w-1/2 text-center pb-2.5 font-bold text-sm border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 transition-all";
+            } else {
+                document.getElementById('form-signup').classList.add('hidden');
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('auth-tab-login').className = "w-1/2 text-center pb-2.5 font-bold text-sm border-b-2 border-red-600 text-red-600 transition-all";
+                document.getElementById('auth-tab-signup').className = "w-1/2 text-center pb-2.5 font-bold text-sm border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 transition-all";
+            }
+        }
+
+        function openPublicView() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('public-screen').classList.remove('hidden');
+            updateAppUI();
+        }
+
+        function closePublicView() {
+            document.getElementById('public-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+
+        function switchPublicSubTab(tabId) {
+            document.querySelectorAll('.pub-sub-panel').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.pub-tab-btn').forEach(btn => {
+                btn.className = "pub-tab-btn px-4 py-2.5 text-xs font-bold rounded-lg text-zinc-600 hover:bg-zinc-100 transition-all";
+            });
+
+            if(tabId === 'jornadas') {
+                document.getElementById('pub-content-jornadas').classList.remove('hidden');
+                document.getElementById('pub-tab-jornadas').className = "pub-tab-btn px-4 py-2.5 text-xs font-bold rounded-lg bg-zinc-950 text-white shadow-sm border-b-2 border-red-600 transition-all";
+            } else if(tabId === 'estadisticas') {
+                document.getElementById('pub-content-estadisticas').classList.remove('hidden');
+                document.getElementById('pub-tab-estadisticas').className = "pub-tab-btn px-4 py-2.5 text-xs font-bold rounded-lg bg-zinc-950 text-white shadow-sm border-b-2 border-red-600 transition-all";
+            } else if(tabId === 'historial') {
+                document.getElementById('pub-content-historial').classList.remove('hidden');
+                document.getElementById('pub-tab-historial').className = "pub-tab-btn px-4 py-2.5 text-xs font-bold rounded-lg bg-zinc-950 text-white shadow-sm border-b-2 border-red-600 transition-all";
+            } else if(tabId === 'sedes') {
+                document.getElementById('pub-content-sedes').classList.remove('hidden');
+                document.getElementById('pub-tab-sedes').className = "pub-tab-btn px-4 py-2.5 text-xs font-bold rounded-lg bg-zinc-950 text-white shadow-sm border-b-2 border-red-600 transition-all";
+            }
+        }
+
+        async function handleSignUp(event) {
+            event.preventDefault();
+            const role = document.getElementById('signup-role').value;
+            
+            const payload = {
+                action: "signup",
+                name: document.getElementById('signup-name').value,
+                role: role,
+                school: role === 'arbitro' ? "No Aplica" : document.getElementById('signup-school').value,
+                address: role === 'arbitro' ? document.getElementById('signup-address').value : "",
+                phone: role === 'arbitro' ? document.getElementById('signup-phone').value : "",
+                zone: role === 'arbitro' ? document.getElementById('signup-zone').value : "",
+                email: document.getElementById('signup-email').value,
+                password: document.getElementById('signup-password').value
+            };
+
+            if (role === 'arbitro') {
+                localReferees.push({
+                    id: "arb_" + new Date().getTime(),
+                    name: payload.name, address: payload.address, phone: payload.phone, zone: payload.zone,
+                    status: "Pendiente", email: payload.email
+                });
+            }
+
+            if(!API_URL) {
+                showNotification("Registro local completado", "Se guardaron los datos en la base local temporal.", "success");
+                document.getElementById('form-signup').reset();
+                switchAuthTab('login');
+                updateAppUI();
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify(payload)
+                });
+                const res = await response.json();
+                if(res.status === "success") {
+                    showNotification("Registro Guardado", "Datos sincronizados con Sheets.", "success");
+                    document.getElementById('form-signup').reset();
+                    switchAuthTab('login');
+                    fetchDataFromSheets();
+                }
+            } catch(e){
+                showNotification("Aviso", "Registro almacenado de manera local.", "info");
+            }
+        }
+    </script>
+
+    <!-- ÁREA OCULTA PARA COPIA DE SCRIPT LIMPIO -->
+    <textarea id="hidden-script-code" class="hidden">/* Copie e implemente el Código.gs proporcionado */</textarea>
+</body>
+</html>
