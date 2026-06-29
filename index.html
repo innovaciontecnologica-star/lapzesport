@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LAPZEsports v5.2 - Gestión Deportiva e Institucional</title>
+    <title>LAPZEsports v5.3 - Gestión Deportiva e Institucional</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -130,7 +130,7 @@
             </div>
             <div class="space-y-2">
                 <h1 class="font-title text-4xl sm:text-5xl font-black tracking-widest text-white">
-                    LAPZE<span class="lowercase text-zinc-400 font-medium">sports</span> <span class="text-xs bg-brand-red text-white font-extrabold px-3 py-1 rounded-full align-middle">v5.2</span>
+                    LAPZE<span class="lowercase text-zinc-400 font-medium">sports</span> <span class="text-xs bg-brand-red text-white font-extrabold px-3 py-1 rounded-full align-middle">v5.3</span>
                 </h1>
                 <p id="splash-subtitle" class="text-xs text-zinc-400 font-bold tracking-widest uppercase animate-pulse">
                     ¡Toca la pantalla para entrar!
@@ -161,7 +161,7 @@
                 </div>
                 <div>
                     <h1 class="font-title text-xl font-black tracking-wider flex items-center gap-1">
-                        <span class="text-white uppercase">LAPZE</span><span class="lowercase text-zinc-400 font-medium">sports</span> <span class="text-[10px] bg-brand-red text-white font-extrabold px-2 py-0.5 rounded-full ml-1.5">v5.2</span>
+                        <span class="text-white uppercase">LAPZE</span><span class="lowercase text-zinc-400 font-medium">sports</span> <span class="text-[10px] bg-brand-red text-white font-extrabold px-2 py-0.5 rounded-full ml-1.5">v5.3</span>
                     </h1>
                 </div>
             </div>
@@ -1893,8 +1893,10 @@
         }
 
         async function adminDeleteUser(email) {
-            if(email === currentUserEmail) {
-                showNotification("Acción no permitida", "No puedes eliminar el usuario con el que estás conectado.", "error");
+            const currentEmailNorm = String(currentUserEmail || '').trim().toLowerCase();
+            const emailNorm = String(email || '').trim().toLowerCase();
+            if(emailNorm === currentEmailNorm) {
+                showNotification("Acción no permitida", `No puedes eliminar el usuario con el que estás conectado (${currentEmailNorm}).`, "error");
                 return;
             }
             if(!confirm(`¿Eliminar el acceso de ${email}?`)) return;
@@ -2109,12 +2111,12 @@
         async function postDataToSheets(payload) {
             if(!API_URL) return { status: "local_success" };
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
+                // v5.3: Escritura por JSONP/GET. Evita el problema CORS de Apps Script cuando el HTML vive en GitHub Pages.
+                const data = await jsonpRequest({
+                    action: "write",
+                    payload: JSON.stringify(payload),
+                    t: Date.now()
                 });
-                const data = await response.json();
                 if(data.status !== "success") {
                     showNotification("Error", data.message || "No se pudo guardar en Sheets.", "error");
                     return data;
@@ -2122,20 +2124,8 @@
                 setTimeout(() => fetchDataFromSheets(), 800);
                 return data;
             } catch(e) {
-                // Fallback para Apps Script cuando el navegador bloquea la lectura de la respuesta por CORS.
-                try {
-                    await fetch(API_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify(payload)
-                    });
-                    setTimeout(() => fetchDataFromSheets(), 1500);
-                    return { status: "pending", message: "Enviado sin lectura de respuesta por CORS" };
-                } catch(finalError) {
-                    showNotification("Error", "No se pudo enviar la información a Sheets.", "error");
-                    return { status: "error", message: finalError.message };
-                }
+                showNotification("Error", "No se pudo enviar la información a Sheets: " + e.message, "error");
+                return { status: "error", message: e.message };
             }
         }
 
