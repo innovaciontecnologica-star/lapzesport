@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LAPZEsports v5.1 - Gestión Deportiva e Institucional</title>
+    <title>LAPZEsports v5.2 - Gestión Deportiva e Institucional</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -130,7 +130,7 @@
             </div>
             <div class="space-y-2">
                 <h1 class="font-title text-4xl sm:text-5xl font-black tracking-widest text-white">
-                    LAPZE<span class="lowercase text-zinc-400 font-medium">sports</span> <span class="text-xs bg-brand-red text-white font-extrabold px-3 py-1 rounded-full align-middle">v5.1</span>
+                    LAPZE<span class="lowercase text-zinc-400 font-medium">sports</span> <span class="text-xs bg-brand-red text-white font-extrabold px-3 py-1 rounded-full align-middle">v5.2</span>
                 </h1>
                 <p id="splash-subtitle" class="text-xs text-zinc-400 font-bold tracking-widest uppercase animate-pulse">
                     ¡Toca la pantalla para entrar!
@@ -161,7 +161,7 @@
                 </div>
                 <div>
                     <h1 class="font-title text-xl font-black tracking-wider flex items-center gap-1">
-                        <span class="text-white uppercase">LAPZE</span><span class="lowercase text-zinc-400 font-medium">sports</span> <span class="text-[10px] bg-brand-red text-white font-extrabold px-2 py-0.5 rounded-full ml-1.5">v5.1</span>
+                        <span class="text-white uppercase">LAPZE</span><span class="lowercase text-zinc-400 font-medium">sports</span> <span class="text-[10px] bg-brand-red text-white font-extrabold px-2 py-0.5 rounded-full ml-1.5">v5.2</span>
                     </h1>
                 </div>
             </div>
@@ -348,6 +348,9 @@
                 <button onclick="switchAdminSubPanel('teams')" id="asb-teams" class="admin-tab-btn flex-shrink-0 px-4 py-2.5 text-xs font-black rounded-lg text-zinc-600 hover:bg-zinc-100 transition-all">
                     <i class="fa-solid fa-users mr-1.5"></i> Registro Equipos
                 </button>
+                <button onclick="switchAdminSubPanel('users')" id="asb-users" class="admin-tab-btn flex-shrink-0 px-4 py-2.5 text-xs font-black rounded-lg text-zinc-600 hover:bg-zinc-100 transition-all">
+                    <i class="fa-solid fa-user-lock mr-1.5"></i> Usuarios / Accesos
+                </button>
                 <button onclick="switchAdminSubPanel('refs')" id="asb-refs" class="admin-tab-btn flex-shrink-0 px-4 py-2.5 text-xs font-black rounded-lg text-zinc-600 hover:bg-zinc-100 transition-all">
                     <i class="fa-solid fa-gavel mr-1.5"></i> Gestión de Árbitros
                 </button>
@@ -482,6 +485,77 @@
                             </thead>
                             <tbody id="admin-teams-table" class="divide-y divide-zinc-100 text-zinc-800 font-semibold"></tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPANEL ACCESOS: USUARIOS Y CLAVES -->
+            <div id="asp-users" class="admin-sub-panel hidden space-y-6 fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+                        <h3 class="font-title text-sm font-black text-brand-black uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-user-lock text-brand-red"></i> Crear / Actualizar Acceso
+                        </h3>
+                        <p class="text-[11px] text-zinc-500 leading-relaxed">Desde aquí das de alta o actualizas credenciales para administradores, coordinadores, coaches y árbitros. La clave no se muestra por seguridad; si alguien la olvida, asígnale una nueva.</p>
+                        <form onsubmit="handleAdminSaveUser(event)" class="space-y-3.5">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-extrabold text-zinc-700 uppercase block">Nombre completo</label>
+                                <input type="text" id="au-name" required placeholder="Ej. Alexander Palacios" class="w-full px-3.5 py-2 border border-zinc-200 rounded-xl text-xs focus:outline-none font-semibold text-zinc-900">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-extrabold text-zinc-700 uppercase block">Correo / Usuario</label>
+                                <input type="email" id="au-email" required placeholder="correo@colegio.com" class="w-full px-3.5 py-2 border border-zinc-200 rounded-xl text-xs focus:outline-none font-semibold text-zinc-900">
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-extrabold text-zinc-700 uppercase block">Rol</label>
+                                    <select id="au-role" class="w-full px-3.5 py-2 border border-zinc-200 rounded-xl text-xs focus:outline-none font-bold text-zinc-700">
+                                        <option value="admin">Admin</option>
+                                        <option value="coordinador">Coordinador</option>
+                                        <option value="coach">Coach</option>
+                                        <option value="arbitro">Árbitro</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-extrabold text-zinc-700 uppercase block">Escuela / Institución</label>
+                                    <input type="text" id="au-school" required placeholder="UPQ, UVAE, LAPZE" class="w-full px-3.5 py-2 border border-zinc-200 rounded-xl text-xs focus:outline-none font-semibold text-zinc-900">
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-extrabold text-zinc-700 uppercase block">Contraseña inicial / nueva</label>
+                                <input type="text" id="au-password" placeholder="Mínimo 6 caracteres" class="w-full px-3.5 py-2 border border-zinc-200 rounded-xl text-xs focus:outline-none font-semibold text-zinc-900">
+                                <p class="text-[9px] text-zinc-400 font-bold">Al crear usuario es obligatoria. Al actualizar, déjala vacía si no quieres cambiarla.</p>
+                            </div>
+                            <button type="submit" class="w-full bg-brand-red hover:bg-brand-darkRed text-white font-black py-2.5 rounded-xl text-xs uppercase transition-colors shadow-md flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-floppy-disk"></i> Guardar Acceso
+                            </button>
+                        </form>
+                    </div>
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-zinc-100 pb-3">
+                            <div>
+                                <h3 class="font-title text-sm font-black text-brand-black uppercase tracking-wider flex items-center gap-1.5">
+                                    <i class="fa-solid fa-users-gear text-zinc-600"></i> Usuarios con acceso
+                                </h3>
+                                <p class="text-[11px] text-zinc-500 mt-0.5">Los roles válidos son: admin, coordinador, coach y arbitro.</p>
+                            </div>
+                            <input type="text" id="admin-users-search" oninput="renderAdminUsersTab()" placeholder="Buscar usuario..." class="px-3.5 py-2 border border-zinc-200 rounded-xl text-xs bg-zinc-50 focus:ring-1 focus:ring-brand-red focus:outline-none font-semibold w-full sm:w-64">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left">
+                                <thead class="bg-zinc-50 text-zinc-700 font-extrabold uppercase text-[9px] border-b border-zinc-200">
+                                    <tr>
+                                        <th class="px-3 py-2.5">Nombre</th>
+                                        <th class="px-3 py-2.5">Correo</th>
+                                        <th class="px-3 py-2.5">Rol</th>
+                                        <th class="px-3 py-2.5">Escuela</th>
+                                        <th class="px-3 py-2.5 text-center">Clave</th>
+                                        <th class="px-3 py-2.5 text-center">Eliminar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-table" class="divide-y divide-zinc-100 font-semibold text-zinc-800"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1165,6 +1239,10 @@
                         <label class="text-[10px] font-extrabold text-zinc-700 uppercase block">Email del Coach</label>
                         <input type="email" id="team-coach-email" placeholder="coach@colegio.edu.mx" required class="w-full px-3.5 py-2 border border-zinc-200 rounded-xl text-xs focus:outline-none font-semibold text-zinc-900">
                     </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-extrabold text-zinc-700 uppercase block">Clave inicial Coach</label>
+                        <input type="text" id="team-coach-password" placeholder="Ej. 123456" value="123456" class="w-full px-3.5 py-2 border border-zinc-200 rounded-xl text-xs focus:outline-none font-semibold text-zinc-900">
+                    </div>
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="button" onclick="closeCreateTeamModal()" class="w-1/2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-extrabold py-2.5 rounded-xl text-xs uppercase">Cancelar</button>
@@ -1502,7 +1580,10 @@
     <script>
         const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbx0Sj2z81EC7MDK_zR_c15UMEw_LoUL5gVDCI2MI1-_AAVEsEZ1lRYLYW8TGispyK0NDA/exec";
         const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1AjB3iFxVThMi9qiCy4SB2El5HqDN6vRtzTLRGnTe_b4/edit?gid=1182207673#gid=1182207673";
-        let API_URL = localStorage.getItem('lapzesport_api_url') || DEFAULT_API_URL;
+        const OLD_API_MARKERS = ["AKfycbxDPNlNlp33KkHGBTSzwlFGXXisOVyU8_thW64LRtwiuZkSFyMW_iViBY7HFppvqT4BSQ"];
+        let savedApiUrl = localStorage.getItem('lapzesport_api_url') || "";
+        let API_URL = (!savedApiUrl || OLD_API_MARKERS.some(marker => savedApiUrl.includes(marker))) ? DEFAULT_API_URL : savedApiUrl;
+        localStorage.setItem('lapzesport_api_url', API_URL);
         let currentUserEmail = "";
         let currentUserRole = "";
         let currentUserSchool = "";
@@ -1572,6 +1653,16 @@
         function normalizeStateShape() {
             state.structures = Array.isArray(state.structures) ? state.structures : [];
             state.users = Array.isArray(state.users) ? state.users : [];
+            const bootstrapUsers = [
+                { date: "2026-06-01T12:00:00.000Z", name: "Admin General", role: "admin", school: "Mesa de Control", email: "admin@lapzesport.com", password: "admin123" },
+                { date: "2026-06-01T12:15:00.000Z", name: "Coach Arturo Ortega", role: "coach", school: "Colegio Tepeyac", email: "coach.arturo@gmail.com", password: "123456" },
+                { date: "2026-06-01T12:25:00.000Z", name: "Árb. Central Aprobado", role: "arbitro", school: "Colegio Arbitral", email: "arbitro.central@arbitros.mx", password: "123456" }
+            ];
+            bootstrapUsers.forEach(u => {
+                const existing = state.users.find(x => String(x.email || '').toLowerCase() === u.email);
+                if(!existing) state.users.push(u);
+                else if(!existing.password) existing.password = u.password;
+            });
             state.teams = Array.isArray(state.teams) ? state.teams : [];
             state.matches = Array.isArray(state.matches) ? state.matches : [];
             state.cedulas = Array.isArray(state.cedulas) ? state.cedulas : [];
@@ -1606,6 +1697,7 @@
                 renderAdminDashboard();
                 renderAdminStructuresTable();
                 renderAdminTeamsTab();
+                renderAdminUsersTab();
                 renderAdminRefsTab();
                 renderAdminMatchesTab();
                 renderAdminSponsorsTab();
@@ -1693,6 +1785,127 @@
             }, 4500);
         }
 
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function escapeJsArg(value) {
+            return String(value ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+        }
+
+        function renderAdminUsersTab() {
+            const tbody = document.getElementById('admin-users-table');
+            if(!tbody) return;
+            const q = (document.getElementById('admin-users-search')?.value || '').trim().toLowerCase();
+            const roleBadge = {
+                admin: 'bg-zinc-900 text-white',
+                coordinador: 'bg-blue-50 text-blue-700 border border-blue-200',
+                coach: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+                arbitro: 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+            };
+            const rows = [...state.users]
+                .filter(u => {
+                    const hay = `${u.name || ''} ${u.email || ''} ${u.role || ''} ${u.school || ''}`.toLowerCase();
+                    return !q || hay.includes(q);
+                })
+                .sort((a,b) => String(a.role || '').localeCompare(String(b.role || '')) || String(a.name || '').localeCompare(String(b.name || '')));
+
+            if(rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-3 py-6 text-center text-zinc-400 font-bold">No hay usuarios registrados.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = rows.map(u => {
+                const role = String(u.role || '').toLowerCase();
+                const email = String(u.email || '').toLowerCase();
+                return `
+                    <tr class="hover:bg-zinc-50">
+                        <td class="px-3 py-2.5 font-black text-zinc-950">${escapeHtml(u.name || 'Sin nombre')}</td>
+                        <td class="px-3 py-2.5 text-zinc-500">${escapeHtml(email)}</td>
+                        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded-lg text-[9px] uppercase font-black ${roleBadge[role] || 'bg-zinc-100 text-zinc-700'}">${escapeHtml(role || 'sin rol')}</span></td>
+                        <td class="px-3 py-2.5 text-zinc-500">${escapeHtml(u.school || '')}</td>
+                        <td class="px-3 py-2.5 text-center">
+                            <button onclick="adminPromptPassword('${escapeJsArg(email)}')" class="bg-zinc-900 hover:bg-black text-white px-2 py-1 rounded-lg text-[9px] font-black uppercase">Nueva clave</button>
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            <button onclick="adminDeleteUser('${escapeJsArg(email)}')" class="text-brand-red hover:text-red-700 text-sm"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        async function handleAdminSaveUser(event) {
+            event.preventDefault();
+            const name = document.getElementById('au-name').value.trim();
+            const email = document.getElementById('au-email').value.trim().toLowerCase();
+            const role = document.getElementById('au-role').value;
+            const school = document.getElementById('au-school').value.trim();
+            const password = document.getElementById('au-password').value.trim();
+            const exists = state.users.some(u => String(u.email).toLowerCase() === email);
+
+            if(!exists && password.length < 6) {
+                showNotification("Clave requerida", "Para crear un usuario debes indicar una contraseña de al menos 6 caracteres.", "error");
+                return;
+            }
+            if(password && password.length < 6) {
+                showNotification("Clave débil", "La contraseña debe tener al menos 6 caracteres.", "error");
+                return;
+            }
+
+            const payload = { action: "upsertUser", name, email, role, school };
+            if(password) payload.password = password;
+
+            const idx = state.users.findIndex(u => String(u.email).toLowerCase() === email);
+            const localUser = { date: new Date().toISOString(), name, email, role, school };
+            if(password) localUser.password = password;
+            if(idx >= 0) state.users[idx] = { ...state.users[idx], ...localUser };
+            else state.users.push(localUser);
+            saveStateLocally();
+
+            const result = await postDataToSheets(payload);
+            if(result.status === "error") return;
+            showNotification("Acceso guardado", "Usuario y credenciales actualizados.", "success");
+            document.getElementById('au-name').value = '';
+            document.getElementById('au-email').value = '';
+            document.getElementById('au-school').value = '';
+            document.getElementById('au-password').value = '';
+            renderAdminUsersTab();
+        }
+
+        async function adminPromptPassword(email) {
+            const pass = prompt(`Nueva contraseña para ${email}:`);
+            if(pass === null) return;
+            if(pass.trim().length < 6) {
+                showNotification("Clave débil", "La contraseña debe tener al menos 6 caracteres.", "error");
+                return;
+            }
+            const result = await postDataToSheets({ action: "setUserPassword", email, password: pass.trim() });
+            if(result.status === "error") return;
+            const user = state.users.find(u => String(u.email).toLowerCase() === email);
+            if(user) user.password = pass.trim();
+            saveStateLocally();
+            showNotification("Clave actualizada", "La nueva contraseña quedó guardada.", "success");
+        }
+
+        async function adminDeleteUser(email) {
+            if(email === currentUserEmail) {
+                showNotification("Acción no permitida", "No puedes eliminar el usuario con el que estás conectado.", "error");
+                return;
+            }
+            if(!confirm(`¿Eliminar el acceso de ${email}?`)) return;
+            state.users = state.users.filter(u => String(u.email).toLowerCase() !== email);
+            saveStateLocally();
+            const result = await postDataToSheets({ action: "deleteUser", email });
+            if(result.status === "error") return;
+            renderAdminUsersTab();
+            showNotification("Usuario eliminado", "El acceso fue retirado.", "success");
+        }
+
         function switchAdminSubPanel(subId) {
             document.querySelectorAll('.admin-sub-panel').forEach(p => p.classList.add('hidden'));
             document.querySelectorAll('.admin-tab-btn').forEach(b => {
@@ -1710,6 +1923,7 @@
             if (subId === 'dash') renderAdminDashboard();
             else if (subId === 'struct') renderAdminStructuresTable();
             else if (subId === 'teams') renderAdminTeamsTab();
+            else if (subId === 'users') renderAdminUsersTab();
             else if (subId === 'refs') renderAdminRefsTab();
             else if (subId === 'rj') renderAdminMatchesTab();
             else if (subId === 'sponsors') renderAdminSponsorsTab();
@@ -1740,6 +1954,13 @@
         function saveStateLocally() {
             localStorage.setItem('lapze_emulated_state', JSON.stringify(state));
         }
+
+        function resetLapzeLocalCache() {
+            localStorage.removeItem('lapze_emulated_state');
+            localStorage.setItem('lapzesport_api_url', DEFAULT_API_URL);
+            location.reload();
+        }
+        window.resetLapzeLocalCache = resetLapzeLocalCache;
 
         // CONTROL DE REPRODUCCIÓN HÁPTICA Y DE SONIDO CON TRIPLE RESPALDO (LOCAL, ONLINE Y SINTETIZADOR NATIVO WEB AUDIO API)
         function initPlatformWithFX() {
@@ -2025,39 +2246,46 @@
             const email = document.getElementById('login-email').value.trim().toLowerCase();
             const password = document.getElementById('login-pass').value.trim();
 
+            if(!email || !password) {
+                showNotification("Datos incompletos", "Escribe correo y contraseña.", "error");
+                return;
+            }
+
+            // Primero valida contra Sheets. Se usa "clave" en vez de "password" para evitar conflictos de caché/parámetros.
             if(API_URL) {
                 try {
-                    const login = await getDataFromApi({ action: "login", email, password, t: Date.now() });
-                    if(login.status !== "success") {
-                        showNotification("Acceso denegado", login.message || "Credenciales incorrectas.", "error");
-                        return;
-                    }
-                    const user = login.user;
-                    const existingIndex = state.users.findIndex(u => u.email === user.email);
-                    if(existingIndex >= 0) state.users[existingIndex] = { ...state.users[existingIndex], ...user };
-                    else state.users.push(user);
+                    const login = await jsonpRequest({ action: "login", email, clave: password, t: Date.now() });
+                    if(login.status === "success") {
+                        const user = login.user;
+                        const existingIndex = state.users.findIndex(u => String(u.email).toLowerCase() === String(user.email).toLowerCase());
+                        if(existingIndex >= 0) state.users[existingIndex] = { ...state.users[existingIndex], ...user };
+                        else state.users.push(user);
+                        saveStateLocally();
 
-                    if(user.role === "arbitro" && login.refereeStatus === "Pendiente") {
-                        document.getElementById('auth-panel').classList.add('hidden');
-                        document.getElementById('arbitro-pendiente-panel').classList.remove('hidden');
+                        if(user.role === "arbitro" && login.refereeStatus === "Pendiente") {
+                            document.getElementById('auth-panel').classList.add('hidden');
+                            document.getElementById('arbitro-pendiente-panel').classList.remove('hidden');
+                            return;
+                        }
+                        setupUserSession(user.name, user.role, user.school, user.email);
                         return;
                     }
-                    setupUserSession(user.name, user.role, user.school, user.email);
+                    showNotification("Acceso denegado", login.message || "Usuario o contraseña incorrectos en Sheets.", "error");
                     return;
                 } catch(e) {
-                    showNotification("Aviso", "No se pudo validar con Sheets. Intentando acceso local.", "warning");
+                    showNotification("Aviso", "No se pudo validar con Sheets. Revisaré el respaldo local.", "warning");
                 }
             }
 
-            const user = state.users.find(u => u.email === email);
+            const user = state.users.find(u => String(u.email).toLowerCase() === email);
             if(!user) {
-                showNotification("Error", "Usuario no encontrado.", "error");
+                showNotification("Error", "Usuario no encontrado. Revisa que exista en la pestaña Usuarios.", "error");
                 return;
             }
 
             const acceptedLocalPassword = user.password || (email === "admin@lapzesport.com" ? "admin123" : "123456");
             if(password !== acceptedLocalPassword) {
-                showNotification("Acceso denegado", "Contraseña incorrecta.", "error");
+                showNotification("Acceso denegado", "Contraseña incorrecta en respaldo local.", "error");
                 return;
             }
 
@@ -2315,6 +2543,7 @@
                 const coordEmail = document.getElementById('team-coord-email').value;
                 const coachName = document.getElementById('team-coach-name').value.trim();
                 const coachEmail = document.getElementById('team-coach-email').value.trim().toLowerCase();
+                const coachPassword = (document.getElementById('team-coach-password')?.value || '123456').trim() || '123456';
                 const shieldFile = document.getElementById('team-shield-file');
                 const shieldUrlInput = document.getElementById('team-shield-url').value.trim();
 
@@ -2330,11 +2559,11 @@
 
                 state.teams.push(teamObj);
                 if(!state.users.some(u => u.email === coachEmail)) {
-                    state.users.push({ date: new Date(), name: coachName, role: "coach", school: currentUserSchool || "Liga", email: coachEmail, password: "123456" });
+                    state.users.push({ date: new Date(), name: coachName, role: "coach", school: currentUserSchool || "Liga", email: coachEmail, password: coachPassword });
                 }
 
                 saveStateLocally();
-                await postDataToSheets({ action: "createTeam", ...teamObj, school: currentUserSchool || "Liga", coachPassword: "123456" });
+                await postDataToSheets({ action: "createTeam", ...teamObj, school: currentUserSchool || "Liga", coachPassword });
                 showNotification("Creado", "El equipo ha sido inscrito.", "success");
                 closeCreateTeamModal();
                 updateAppUI();
